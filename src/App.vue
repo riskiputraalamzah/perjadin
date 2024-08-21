@@ -5,7 +5,6 @@ import HeaderItem from './components/HeaderItem.vue'
 const sources = [
   '/assets/libs/jquery/dist/jquery.min.js',
   '/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js',
-
   '/assets/js/app.min.js',
   '/assets/libs/apexcharts/dist/apexcharts.min.js',
   '/assets/libs/simplebar/dist/simplebar.js'
