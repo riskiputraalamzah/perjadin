@@ -7,6 +7,6 @@ import AuthTemplateView from './views/Auth/AuthTemplateView.vue'
 </script>
 
 <template>
-  <DashboardTemplateView v-if="store.login" />
+  <DashboardTemplateView v-if="store.login && !['login', 'register'].includes($route.name)" />
   <AuthTemplateView v-else />
 </template>

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import { useMainStore } from '@/stores/main'
+
+import { useAuthStore } from '@/stores/Auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -59,9 +60,25 @@ const router = createRouter({
     }
   ]
 })
-
 router.beforeEach((to, from, next) => {
-  const store = useMainStore()
-  to.meta.mustLogin && !store.login ? next({ name: 'login' }) : next()
+  const authStore = useAuthStore()
+
+  // Cek status login pengguna
+  const isLoggedIn = authStore.checkLoginStatus()
+
+  // Jika rute memerlukan login
+  if (to.meta.mustLogin) {
+    // Jika sudah login, lanjutkan
+    // Jika belum, arahkan ke halaman login
+    return isLoggedIn ? next() : next('/login')
+  }
+
+  // Jika pengguna sudah login, cegah akses ke halaman login/register dan arahkan ke beranda
+  if (isLoggedIn && ['login', 'register'].includes(to.name)) {
+    return next('/')
+  }
+
+  // Lanjutkan ke rute tujuan
+  next()
 })
 export default router

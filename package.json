@@ -12,8 +12,11 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "2": "^3.0.0",
+    "axios": "^1.7.4",
     "idb": "^8.0.0",
     "pinia": "^2.1.7",
+    "sweetalert2": "^11.12.4",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3"
   },
