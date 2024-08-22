@@ -1,0 +1,114 @@
+{
+  "tahun_anggaran": 2024,
+  "satker": "",
+  "rekap_perjalanan_dinas": [
+    {
+      "id": 1,
+      "nilai_spm": 3707000,
+      "nomor_spm": "00014A",
+      "tanggal_spm": "2024-01-31",
+      "nomor_sp2d": "241651303000089",
+      "tanggal_sp2d": "2024-02-02",
+      "periode_bulan_sp2d": "Februari",
+      "mata_anggaran": "4057.SCH.003.077.A.524111",
+      "rincian_pelaksanaan": {
+        "nomor_st": "ST-16/KPN.1603/2024",
+        "tanggal_st": "2024-01-25",
+        "uraian_tugas": "Narasumber Rapat Koordinasi Persiapan Pelatihan Vokasi"
+      },
+      "pegawai": {
+        "nama_lengkap": "Rezaldy Fahmy Pirzadha",
+        "nip": "",
+        "golongan": "",
+        "jabatan": "",
+        "tujuan": "Malang",
+        "tanggal_berangkat": "2024-01-25",
+        "tanggal_pulang": null,
+        "lama_penugasan_hari": 1
+      },
+      "akomodasi": {
+        "nama_hotel": "Hotel Atria",
+        "no_voucher_invoice": null,
+        "sarana_transportasi": null,
+        "kode_booking": null,
+        "nomor_kursi": null
+      },
+      "biaya": {
+        "transport": {
+          "dari": "",
+          "ke": "",
+          "taksi_pp_bensin_tol": 451000,
+          "harga_tiket_berangkat": null,
+          "harga_tiket_pulang": null,
+          "jumlah_harga_tiket": null
+        },
+        "uang_penginapan": {
+          "tarif_satuan": 814000,
+          "jumlah_hari_malam": 1,
+          "jumlah": 814000
+        },
+        "uang_harian": {
+          "jumlah_hari": 1,
+          "satuan": null,
+          "jumlah": null
+        },
+        "biaya_lainnya": null,
+        "total_dana_diterima": null
+      }
+    },
+    {
+      "id": 2,
+      "nilai_spm": null,
+      "nomor_spm": null,
+      "tanggal_spm": null,
+      "nomor_sp2d": null,
+      "tanggal_sp2d": null,
+      "periode_bulan_sp2d": null,
+      "mata_anggaran": null,
+      "rincian_pelaksanaan": {
+        "nomor_st": "ST-17/KPN.1603/2024",
+        "tanggal_st": "2024-01-25",
+        "uraian_tugas": "Narasumber Rapat Koordinasi Persiapan Pelatihan Vokasi"
+      },
+      "pegawai": {
+        "nama_lengkap": "Dedy Murdiyanto",
+        "nip": "",
+        "golongan": "",
+        "jabatan": "",
+        "tujuan": "Malang",
+        "tanggal_berangkat": "2024-01-25",
+        "tanggal_pulang": null,
+        "lama_penugasan_hari": 1
+      },
+      "akomodasi": {
+        "nama_hotel": "Hotel Atria",
+        "no_voucher_invoice": null,
+        "sarana_transportasi": null,
+        "kode_booking": null,
+        "nomor_kursi": null
+      },
+      "biaya": {
+        "transport": {
+          "dari": "",
+          "ke": "",
+          "taksi_pp_bensin_tol": null,
+          "harga_tiket_berangkat": null,
+          "harga_tiket_pulang": null,
+          "jumlah_harga_tiket": null
+        },
+        "uang_penginapan": {
+          "tarif_satuan": 814000,
+          "jumlah_hari_malam": 1,
+          "jumlah": 814000
+        },
+        "uang_harian": {
+          "jumlah_hari": 1,
+          "satuan": null,
+          "jumlah": null
+        },
+        "biaya_lainnya": null,
+        "total_dana_diterima": null
+      }
+    }
+  ]
+}

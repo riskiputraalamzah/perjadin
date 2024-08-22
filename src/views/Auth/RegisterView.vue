@@ -4,7 +4,7 @@
       ><img src="/assets/images/gmbr_3.png" width="180" alt=""
     /></router-link>
 
-    <p class="text-center">Buat Akun</p>
+    <p class="text-center fw-bold text-dark display-6">Register</p>
     <form>
       <div class="mb-3">
         <label for="exampleInputtext1" class="form-label">Name</label>

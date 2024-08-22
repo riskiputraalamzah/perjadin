@@ -1,0 +1,29 @@
+[
+  {
+    "id": 0,
+    "name": "Admin",
+    "username": "admin",
+    "email": "admin@gmail.com",
+    "password": "admin123",
+    "role": "admin",
+    "created_at": "2024-08-22T10:00:00.000Z"
+  },
+  {
+    "id": 1,
+    "name": "Danda",
+    "username": "danda",
+    "email": "danda@gmail.com",
+    "password": "danda123",
+    "role": "petugas",
+    "created_at": "2024-08-22T11:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Gilang",
+    "username": "gilang",
+    "email": "gilang@gmail.com",
+    "password": "gilang123",
+    "role": "petugas",
+    "created_at": "2024-08-22T12:00:00.000Z"
+  }
+]
