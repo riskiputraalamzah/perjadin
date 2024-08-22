@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import { useMainStore } from '@/stores/main'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,57 +8,60 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
+      meta: { mustLogin: true },
       component: HomeView
     },
     {
       path: '/pegawai',
       name: 'pegawai',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
+      meta: { mustLogin: true },
       component: () => import('../views/PegawaiView.vue')
     },
     {
       path: '/surat-tugas',
       name: 'suratTugas',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
+      meta: { mustLogin: true },
       component: () => import('../views/SuratTugasView.vue')
     },
     {
       path: '/surat-perintah-perjalanan-dinas',
       name: 'sppd',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
+      meta: { mustLogin: true },
       component: () => import('../views/SPPDView.vue')
     },
     {
       path: '/laporan',
       name: 'laporan',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
+      meta: { mustLogin: true },
       component: () => import('../views/LaporanView.vue')
     },
     {
       path: '/kwitansi',
       name: 'kwitansi',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
+      meta: { mustLogin: true },
       component: () => import('../views/KwitansiView.vue')
     },
     {
       path: '/rekap-data',
       name: 'rekap',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
+      meta: { mustLogin: true },
       component: () => import('../views/RekapDataView.vue')
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/Auth/LoginView.vue')
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('../views/Auth/RegisterView.vue')
     }
   ]
 })
 
+router.beforeEach((to, from, next) => {
+  const store = useMainStore()
+  to.meta.mustLogin && !store.login ? next({ name: 'login' }) : next()
+})
 export default router
