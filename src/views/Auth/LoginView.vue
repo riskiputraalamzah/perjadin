@@ -5,6 +5,7 @@ import Swal from 'sweetalert2'
 import { computed, ref } from 'vue'
 
 const loginStore = useAuthStore()
+
 const formData = computed(() => loginStore.loginForm)
 
 const router = useRouter()
@@ -21,7 +22,10 @@ const handleSubmit = async () => {
   disabledSubmit.value = !disabledSubmit.value //ubah ke true
 
   Swal.fire(storeData.alert)
-  router.push('/')
+  setTimeout(() => {
+    router.push('/')
+    window.location.reload()
+  }, 1000)
 }
 
 const disabledSubmit = ref(false)
@@ -38,7 +42,6 @@ const disabledSubmit = ref(false)
         <input
           type="text"
           class="form-control"
-          required
           id="exampleInputEmail1"
           v-model="formData.username"
           aria-describedby="emailHelp"
@@ -49,7 +52,6 @@ const disabledSubmit = ref(false)
         <label for="exampleInputPassword1" class="form-label">Password</label>
         <input
           type="password"
-          required
           class="form-control"
           v-model="formData.password"
           id="exampleInputPassword1"

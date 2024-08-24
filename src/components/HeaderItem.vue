@@ -1,3 +1,22 @@
+<script setup>
+import Swal from 'sweetalert2'
+
+const logout = () => {
+  Swal.fire({
+    title: 'Anda ingin Logout ',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Submit',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      localStorage.removeItem('login')
+      localStorage.removeItem('user')
+      window.location.reload()
+    }
+  })
+}
+</script>
 <template>
   <header class="app-header">
     <nav class="navbar navbar-expand-lg navbar-light">
@@ -39,19 +58,10 @@
                   <i class="ti ti-user fs-6"></i>
                   <p class="mb-0 fs-3">My Profile</p>
                 </a>
-                <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
-                  <i class="ti ti-mail fs-6"></i>
-                  <p class="mb-0 fs-3">My Account</p>
+
+                <a @click.prevent="logout" class="btn btn-outline-primary mx-3 mt-2 d-block">
+                  Logout
                 </a>
-                <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
-                  <i class="ti ti-list-check fs-6"></i>
-                  <p class="mb-0 fs-3">My Task</p>
-                </a>
-                <a
-                  href="./authentication-login.html"
-                  class="btn btn-outline-primary mx-3 mt-2 d-block"
-                  >Logout</a
-                >
               </div>
             </div>
           </li>

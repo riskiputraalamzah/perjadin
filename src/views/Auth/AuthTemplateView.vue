@@ -1,5 +1,10 @@
 <script setup>
+import { useIDBStore } from '@/stores/IDB'
 import { RouterView } from 'vue-router'
+import dbUser from '@/data/users.json'
+
+const idbStore = useIDBStore()
+
 const sources = [
   '/assets/libs/jquery/dist/jquery.min.js',
   '/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js'
@@ -32,6 +37,16 @@ const loadScriptsSequentially = async () => {
 }
 
 loadScriptsSequentially()
+
+const initDB = async () => {
+  const exist = await idbStore.checkDB()
+  if (!exist) {
+    await idbStore.storeToDB('users', dbUser)
+    return console.log('Seeder data berhasil')
+  }
+}
+
+initDB()
 </script>
 
 <template>

@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useMainStore } from './main'
-
-import dbUser from '@/data/users.json'
+import { useIDBStore } from './IDB'
 
 export const useAuthStore = defineStore('authStore', () => {
   const mainStore = useMainStore()
+  const idbStore = useIDBStore()
 
   // data login user
   const loginForm = ref({
@@ -13,7 +13,7 @@ export const useAuthStore = defineStore('authStore', () => {
     password: ''
   })
 
-  const setLoginFormData = (data) => {
+  const setLoginFormData = async (data) => {
     // cek apakah data kosong
 
     if (data.username == '' || data.password == '') {
@@ -27,10 +27,10 @@ export const useAuthStore = defineStore('authStore', () => {
     }
 
     // cek apakah data ada pada database
+    const dbUser = await idbStore.fetchData('users')
     const isAvailable = dbUser.find(
       (item) => item.username == data.username && item.password == data.password
     )
-    console.log(isAvailable)
 
     if (!isAvailable) {
       return {
@@ -47,7 +47,7 @@ export const useAuthStore = defineStore('authStore', () => {
     loginForm.value = data
 
     localStorage.setItem('login', 'true')
-    localStorage.setItem('user', JSON.stringify(data))
+    localStorage.setItem('user', JSON.stringify(isAvailable))
 
     // mengubah state login menjadi true
 
@@ -57,7 +57,8 @@ export const useAuthStore = defineStore('authStore', () => {
       success: true,
       alert: {
         icon: 'success',
-        title: 'Login Berhasil'
+        title: 'Login Berhasil',
+        showConfirmButton: false
       }
     }
   }
@@ -82,7 +83,7 @@ export const useAuthStore = defineStore('authStore', () => {
     return false
   }
 
-  const postDataRegistrasi = (data) => {
+  const postDataRegistrasi = async (data) => {
     if (
       data.name == '' ||
       data.username == '' ||
@@ -97,12 +98,34 @@ export const useAuthStore = defineStore('authStore', () => {
         }
       }
     }
+    if (data.confirm_password != data.password) {
+      return {
+        success: false,
+        alert: {
+          icon: 'error',
+          title: 'Password tidak sama'
+        }
+      }
+    }
+    const setRole = {
+      role: 'petugas'
+    }
+
+    // hapus objek confirm password
+    let copyData = { ...data, ...setRole }
+
+    delete copyData.confirm_password
+
+    // store data ke objek
+    await idbStore.addItem('users', copyData)
+    console.log('data berhasil di tambahkan')
 
     return {
-      success: false,
+      success: true,
       alert: {
-        icon: 'info',
-        title: 'Maaf, masih dalam proses develop'
+        icon: 'success',
+        title: 'Registrasi Berhasil',
+        text: 'Silahkan login menggunakan akun yang baru Anda buat'
       }
     }
   }

@@ -1,0 +1,1 @@
+import{_ as e}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c,o}from"./index-YskfwHFY.js";const r={};function a(t,n){return o(),c("div",null,"pegawai")}const i=e(r,[["render",a]]);export{i as default};

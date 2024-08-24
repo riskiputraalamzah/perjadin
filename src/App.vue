@@ -1,12 +1,20 @@
 <script setup>
-import { useMainStore } from './stores/main'
-const store = useMainStore()
+import { defineAsyncComponent, computed } from 'vue'
+import { useRoute } from 'vue-router'
 
-import DashboardTemplateView from './views/DashboardTemplateView.vue'
-import AuthTemplateView from './views/Auth/AuthTemplateView.vue'
+// Lazy load komponen secara dinamis
+const DashboardTemplateView = defineAsyncComponent(
+  () => import('./views/DashboardTemplateView.vue')
+)
+const AuthTemplateView = defineAsyncComponent(() => import('./views/Auth/AuthTemplateView.vue'))
+
+const route = useRoute()
+
+const layoutComponent = computed(() =>
+  route.meta.mustLogin ? DashboardTemplateView : AuthTemplateView
+)
 </script>
 
 <template>
-  <DashboardTemplateView v-if="store.login && !['login', 'register'].includes($route.name)" />
-  <AuthTemplateView v-else />
+  <component :is="layoutComponent" />
 </template>

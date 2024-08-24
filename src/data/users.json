@@ -1,6 +1,5 @@
 [
   {
-    "id": 0,
     "name": "Admin",
     "username": "admin",
 
@@ -9,7 +8,6 @@
     "created_at": "2024-08-22T10:00:00.000Z"
   },
   {
-    "id": 1,
     "name": "Danda",
     "username": "danda",
 
@@ -18,7 +16,6 @@
     "created_at": "2024-08-22T11:00:00.000Z"
   },
   {
-    "id": 2,
     "name": "Gilang",
     "username": "gilang",
 

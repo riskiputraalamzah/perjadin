@@ -3,10 +3,11 @@
     <!-- Sidebar scroll-->
     <div>
       <div class="brand-logo d-flex align-items-center justify-content-between">
-        <a href="./index.html" class="text-nowrap logo-img d-flex align-items-center g-3">
+        <router-link class="text-nowrap logo-img d-flex align-items-center g-3" to="/">
           <img src="/assets/images/gmbr_3.png" width="80" alt="" />
-          <span class="h3 text-dark">Perjadin</span>
-        </a>
+          <span class="h3 text-dark">Perjadin</span></router-link
+        >
+
         <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
           <i class="ti ti-x fs-8"></i>
         </div>
