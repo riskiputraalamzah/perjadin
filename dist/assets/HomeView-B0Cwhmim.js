@@ -1,0 +1,1 @@
+import{f as a,c as t,t as r,o}from"./index-Bew1uMYN.js";const m={__name:"HomeView",setup(s){const e=a(JSON.parse(localStorage.getItem("user")));return(c,n)=>(o(),t("h1",null,"Hai, "+r(e.value.name),1))}};export{m as default};
