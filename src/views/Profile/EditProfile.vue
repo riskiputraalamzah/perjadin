@@ -1,3 +1,6 @@
+<script setup>
+const imageSrc = new URL('/assets/images/user-1.jpg', import.meta.url).href
+</script>
 <template>
   <div class="card">
     <h4 class="card-header text-dark fw-bold">Edit Profile</h4>
@@ -7,7 +10,7 @@
         <div class="row g-4 align-items-center">
           <div class="col-md-3 col-4">
             <img
-              src="/assets/images/profile/user-1.jpg"
+              :src="imageSrc"
               class="card-img-top ratio ratio-1x1 object-fit-fill img-thumbnail"
             />
           </div>

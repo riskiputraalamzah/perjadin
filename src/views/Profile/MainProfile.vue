@@ -1,12 +1,12 @@
 <script setup>
 import { ref } from 'vue'
+const imageSrc = new URL('/assets/images/user-1.jpg', import.meta.url).href
+const userData = ref(JSON.parse(localStorage.getItem('user')))
 
-const userData = JSON.parse(localStorage.getItem('user'))
-
-const data = ref({
-  name: userData.name,
-  role: userData.role,
-  username: userData.username
+const authentication = ref({
+  passwordLama: '',
+  passwordBaru: '',
+  confirmPasswordBaru: ''
 })
 </script>
 <template>
@@ -15,22 +15,17 @@ const data = ref({
       <div class="card">
         <h4 class="card-header text-dark fw-bold d-flex justify-content-between align-items-center">
           <span>My Profile</span>
-          <span class="badge text-bg-success text-uppercase fs-1" v-text="data.role"></span>
+          <span class="badge text-bg-success text-uppercase fs-1" v-text="userData.role"></span>
         </h4>
 
-        <img
-          src="/assets/images/profile/user-1.jpg"
-          class="card-img-top ratio ratio-1x1 object-fit-fill img-thumbnail"
-          alt="..."
-        />
+        <img :src="imageSrc" class="card-img-top ratio ratio-1x1 object-fit-fill img-thumbnail" />
         <div class="card-body text-center">
-          <h5 class="card-title fw-bold mb-5" v-text="data.name"></h5>
+          <h5 class="card-title fw-bold mb-5" v-text="userData.name"></h5>
 
           <router-link to="/profile/edit" class="btn btn-warning">Edit</router-link>
         </div>
       </div>
     </div>
-
     <div class="col-lg-8">
       <div class="card">
         <h4 class="card-header text-dark fw-bold">Authentication</h4>
@@ -39,27 +34,36 @@ const data = ref({
           <form>
             <div class="mb-3">
               <label for="username" class="form-label">Username</label>
-              <input
-                type="text"
-                class="form-control"
-                id="username"
-                v-model="data.username"
-                readonly
-              />
+              <input type="text" class="form-control" id="username" :value="userData.username" />
             </div>
             <div class="mb-3">
               <label for="passwordLama" class="form-label">Password Lama</label>
-              <input type="password" class="form-control" id="passwordLama" autofocus />
+              <input
+                type="password"
+                class="form-control"
+                id="passwordLama"
+                v-model="authentication.passwordLama"
+              />
             </div>
             <div class="mb-3">
               <label for="passwordbaru" class="form-label">Password Baru</label>
-              <input type="password" class="form-control" id="passwordbaru" />
+              <input
+                type="password"
+                class="form-control"
+                id="passwordbaru"
+                v-model="authentication.passwordBaru"
+              />
             </div>
             <div class="mb-3">
               <label for="confirmPasswordBaru" class="form-label">Konfirmasi Password Baru</label>
-              <input type="password" class="form-control" id="confirmPasswordBaru" />
+              <input
+                type="password"
+                class="form-control"
+                id="confirmPasswordBaru"
+                v-model="authentication.confirmPasswordBaru"
+              />
             </div>
-            <button @submit.prevent type="submit" class="btn btn-primary float-end">Simpan</button>
+            <button type="submit" class="btn btn-primary float-end">Simpan</button>
           </form>
         </div>
       </div>
