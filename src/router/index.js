@@ -1,8 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 
 import { useAuthStore } from '@/stores/Auth'
-import { useIDBStore } from '@/stores/IDB'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,25 +15,37 @@ const router = createRouter({
       path: '/',
       name: 'home',
       meta: { mustLogin: true },
-      component: HomeView
+      component: () => import('../views/HomeView.vue')
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      meta: { mustLogin: true },
+      component: () => import('../views/Profile/MainProfile.vue')
+    },
+    {
+      path: '/profile/edit',
+      name: 'profileEdit',
+      meta: { mustLogin: true },
+      component: () => import('../views/Profile/EditProfile.vue')
     },
     {
       path: '/pegawai',
       name: 'pegawai',
       meta: { mustLogin: true },
-      component: () => import('../views/PegawaiView.vue')
+      component: () => import('../views/Pegawai/MainPegawaiView.vue')
     },
     {
       path: '/surat-tugas',
       name: 'suratTugas',
       meta: { mustLogin: true },
-      component: () => import('../views/SuratTugasView.vue')
+      component: () => import('../views/ST/MainSTView.vue')
     },
     {
       path: '/surat-perintah-perjalanan-dinas',
       name: 'sppd',
       meta: { mustLogin: true },
-      component: () => import('../views/SPPDView.vue')
+      component: () => import('../views/SPPD/MainSPPDView.vue')
     },
     {
       path: '/laporan',

@@ -1,0 +1,1 @@
+import{_ as e}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c as t,o as c}from"./index-C-qX3Qww.js";const n={};function o(r,i){return c(),t("div",null,"hai init db")}const _=e(n,[["render",o]]);export{_ as default};

@@ -31,6 +31,17 @@
               </span>
               <span class="hide-menu">Dashboard</span>
             </router-link>
+            <router-link
+              to="/profile"
+              class="sidebar-link"
+              exact-active-class="active"
+              active-class="active"
+            >
+              <span>
+                <i class="ti ti-user"></i>
+              </span>
+              <span class="hide-menu">My Profile</span>
+            </router-link>
           </li>
           <li class="nav-small-cap">
             <i class="ti ti-dots nav-small-cap-icon fs-4"></i>

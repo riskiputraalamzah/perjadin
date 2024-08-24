@@ -1,1 +1,0 @@
-import{_ as e}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c as r,o as t}from"./index-YskfwHFY.js";const c={};function o(a,s){return t(),r("div",null,"surat tugas")}const u=e(c,[["render",o]]);export{u as default};
