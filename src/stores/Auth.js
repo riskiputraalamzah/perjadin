@@ -98,6 +98,21 @@ export const useAuthStore = defineStore('authStore', () => {
         }
       }
     }
+
+    // apakah ada username yang sama
+    const dbUser = await idbStore.fetchData('users')
+    const usernameIsExist = dbUser.find((item) => item.username == data.username)
+
+    if (usernameIsExist) {
+      return {
+        success: false,
+        alert: {
+          icon: 'error',
+          title: 'Username telah terpakai',
+          text: `Username [${data.username}] telah digunakan oleh orang lain, Harap ganti !!!`
+        }
+      }
+    }
     if (data.confirm_password != data.password) {
       return {
         success: false,
@@ -130,5 +145,29 @@ export const useAuthStore = defineStore('authStore', () => {
     }
   }
 
-  return { loginForm, setLoginFormData, resetLoginForm, checkLoginStatus, postDataRegistrasi }
+  const getUser = async () => {
+    const userLogin = JSON.parse(localStorage.getItem('user'))
+    const allUser = await idbStore.fetchData('users')
+
+    const row = allUser.find((data) => data.username === userLogin.username)
+
+    const avatar =
+      'file' in row
+        ? idbStore.createObjectURL(row.file)
+        : new URL('/assets/images/user-1.jpg', import.meta.url).href
+
+    return {
+      row,
+      avatar
+    }
+  }
+
+  return {
+    loginForm,
+    setLoginFormData,
+    resetLoginForm,
+    checkLoginStatus,
+    postDataRegistrasi,
+    getUser
+  }
 })

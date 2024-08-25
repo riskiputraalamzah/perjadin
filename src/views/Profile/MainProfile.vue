@@ -1,12 +1,79 @@
 <script setup>
-import { ref } from 'vue'
-const imageSrc = new URL('/assets/images/user-1.jpg', import.meta.url).href
-const userData = ref(JSON.parse(localStorage.getItem('user')))
+import Swal from 'sweetalert2'
+import { ref, onMounted } from 'vue'
+import { useIDBStore } from '@/stores/IDB'
+import { useAuthStore } from '@/stores/Auth'
+
+const idbStore = useIDBStore()
+const authStore = useAuthStore()
+
+const userData = ref({})
+const imageSrc = ref(null)
 
 const authentication = ref({
   passwordLama: '',
   passwordBaru: '',
   confirmPasswordBaru: ''
+})
+
+const resetAuthentication = () => {
+  authentication.value = {
+    passwordBaru: '',
+    confirmPasswordBaru: '',
+    passwordLama: ''
+  }
+}
+
+const handledSubmit = async () => {
+  if (
+    authentication.value.passwordLama == '' ||
+    authentication.value.passwordBaru == '' ||
+    authentication.value.confirmPasswordBaru == ''
+  ) {
+    resetAuthentication()
+    return Swal.fire({
+      title: 'Lengkapi Form terlebih dahulu',
+      icon: 'error'
+    })
+  }
+
+  if (authentication.value.passwordLama != userData.value.password) {
+    resetAuthentication()
+    return Swal.fire({
+      title: 'Password Lama Anda salah',
+      icon: 'error'
+    })
+  }
+
+  if (authentication.value.passwordBaru != authentication.value.confirmPasswordBaru) {
+    resetAuthentication()
+    return Swal.fire({
+      title: 'Password Baru Anda tidak sama',
+      icon: 'error'
+    })
+  }
+
+  const newData = {
+    password: authentication.value.passwordBaru
+  }
+
+  await idbStore.updateData('users', 'username', userData.value.username, newData)
+
+  resetAuthentication()
+  return Swal.fire({
+    title: 'Autentikasi Anda berhasil diubah',
+    icon: 'success'
+  })
+}
+
+onMounted(async () => {
+  // Menunggu hingga getUser resolve
+  const { row, avatar } = await authStore.getUser()
+
+  userData.value = row
+  imageSrc.value = avatar
+
+
 })
 </script>
 <template>
@@ -31,10 +98,16 @@ const authentication = ref({
         <h4 class="card-header text-dark fw-bold">Authentication</h4>
 
         <div class="card-body">
-          <form>
+          <form @submit.prevent="handledSubmit">
             <div class="mb-3">
               <label for="username" class="form-label">Username</label>
-              <input type="text" class="form-control" id="username" :value="userData.username" />
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                :value="userData.username"
+                disabled
+              />
             </div>
             <div class="mb-3">
               <label for="passwordLama" class="form-label">Password Lama</label>

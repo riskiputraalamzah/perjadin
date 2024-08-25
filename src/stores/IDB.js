@@ -27,6 +27,28 @@ export const useIDBStore = defineStore('idb', () => {
     return console.log('database berhasil di buat ')
   }
 
+  const updateData = async (nameObject, key, value, newData) => {
+    if (!db.value) await initDB(nameObject)
+    const transaction = db.value.transaction(nameObject, 'readwrite')
+    const store = transaction.objectStore(nameObject)
+
+    // Dapatkan data yang ingin diupdate
+    const allData = await store.getAll()
+
+    const findData = allData.find((data) => data[key] === value)
+    const findDataIsExist = findData ? findData.id : null // Mengembalikan ID jika ditemukan
+
+    // Dapatkan data yang ingin diupdate
+    const data = await store.get(findDataIsExist)
+    // Jika data ditemukan, update dengan newData
+    if (data) {
+      const updatedData = { ...data, ...newData } // Gabungkan data lama dengan data baru
+      await store.put(updatedData) // Update data
+      return updatedData
+    } else {
+      throw new Error(`Data ${nameObject} dengan ${key} ${value} tidak ditemukan.`)
+    }
+  }
   // tambahkan data objek ke dalam yang telah di buat oleh initDB
   const saveToIndexedDB = async (name, data) => {
     const tx = db.value.transaction(name, 'readwrite')
@@ -65,10 +87,26 @@ export const useIDBStore = defineStore('idb', () => {
     await tx.done
   }
 
+  const createObjectURL = (file) => {
+    if (file) {
+      return URL.createObjectURL(file)
+    }
+    return null
+  }
+
+  const updateUserLocalStorage = (dataUser) => {
+    const user = JSON.parse(localStorage.getItem('user'))
+    const newUser = JSON.stringify({ ...user, ...dataUser })
+    localStorage.setItem('user', newUser)
+  }
+
   return {
     checkDB,
     storeToDB,
     fetchData,
-    addItem
+    addItem,
+    updateData,
+    updateUserLocalStorage,
+    createObjectURL
   }
 })

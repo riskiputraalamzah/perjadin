@@ -6,8 +6,9 @@ const logout = () => {
     title: 'Anda ingin Logout ',
     icon: 'question',
     showCancelButton: true,
-    confirmButtonText: 'Submit',
-    cancelButtonText: 'Cancel'
+    confirmButtonText: 'Ya',
+    cancelButtonText: 'Tidak',
+    cancelButtonColor: 'red'
   }).then((result) => {
     if (result.isConfirmed) {
       localStorage.removeItem('login')
