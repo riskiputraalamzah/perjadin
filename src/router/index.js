@@ -12,6 +12,12 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue')
     },
     {
+      path: '/init-db',
+      name: 'initDB',
+      meta: { mustLogin: true },
+      component: () => import('../views/InitDataView.vue')
+    },
+    {
       path: '/profile',
       name: 'profile',
       meta: { mustLogin: true },
