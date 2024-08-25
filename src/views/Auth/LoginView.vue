@@ -29,6 +29,8 @@ const handleSubmit = async () => {
 }
 
 const disabledSubmit = ref(false)
+
+const togglePassword = ref(false)
 </script>
 <template>
   <div class="card-body">
@@ -48,14 +50,18 @@ const disabledSubmit = ref(false)
         />
         <!-- <span class="text-danger small">maaf</span> -->
       </div>
-      <div class="mb-4">
+      <div class="mb-4 parent-toggle-password">
         <label for="exampleInputPassword1" class="form-label">Password</label>
         <input
-          type="password"
+          :type="togglePassword ? 'text' : 'password'"
           class="form-control"
           v-model="formData.password"
           id="exampleInputPassword1"
         />
+        <i
+          :class="['ti icon', togglePassword ? 'ti-eye' : 'ti-eye-off']"
+          @click="togglePassword = !togglePassword"
+        ></i>
       </div>
 
       <button

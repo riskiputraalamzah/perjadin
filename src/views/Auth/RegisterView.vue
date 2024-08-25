@@ -41,6 +41,9 @@ const handleSubmit = async () => {
   Swal.fire(storeDataRegistrasi.alert)
   router.push('/login')
 }
+
+const togglePassword = ref(false)
+const toggleConfirmPassword = ref(false)
 </script>
 
 <template>
@@ -71,23 +74,31 @@ const handleSubmit = async () => {
           aria-describedby="emailHelp"
         />
       </div>
-      <div class="mb-4">
+      <div class="mb-4 parent-toggle-password">
         <label for="exampleInputPassword1" class="form-label">Password</label>
         <input
-          type="password"
+          :type="togglePassword ? 'text' : 'password'"
           class="form-control"
           id="exampleInputPassword1"
           v-model="formData.password"
         />
+        <i
+          :class="['ti icon', togglePassword ? 'ti-eye' : 'ti-eye-off']"
+          @click="togglePassword = !togglePassword"
+        ></i>
       </div>
-      <div class="mb-4">
+      <div class="mb-4 parent-toggle-password">
         <label for="confirm_password" class="form-label">Konfirmasi Password</label>
         <input
-          type="password"
+          :type="toggleConfirmPassword ? 'text' : 'password'"
           v-model="formData.confirm_password"
           class="form-control"
           id="confirm_password"
         />
+        <i
+          :class="['ti icon', toggleConfirmPassword ? 'ti-eye' : 'ti-eye-off']"
+          @click="toggleConfirmPassword = !toggleConfirmPassword"
+        ></i>
       </div>
       <button
         :disabled="disabledSubmit"

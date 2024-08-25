@@ -74,3 +74,17 @@ initDB()
     </div>
   </div>
 </template>
+
+<style>
+.parent-toggle-password {
+  position: relative;
+}
+.parent-toggle-password .icon {
+  position: absolute;
+  right: 0;
+  top: calc(50% + 3px);
+  transform: translateX(-50%);
+  font-size: 20px;
+  cursor: pointer;
+}
+</style>
