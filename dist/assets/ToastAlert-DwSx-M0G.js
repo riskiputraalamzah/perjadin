@@ -1,1 +1,0 @@
-import{S as e}from"./index-Zf5tl8Hn.js";const o=e.mixin({toast:!0,position:"top-end",showConfirmButton:!1,timer:5e3,timerProgressBar:!0,didOpen:t=>{t.addEventListener("mouseenter",e.stopTimer),t.addEventListener("mouseleave",e.resumeTimer)}});export{o as T};
