@@ -68,34 +68,31 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
+      meta: { mustLogin: false },
       component: () => import('../views/Auth/LoginView.vue')
     },
     {
       path: '/register',
       name: 'register',
+      meta: { mustLogin: false },
       component: () => import('../views/Auth/RegisterView.vue')
     }
   ]
 })
+// router/index.js atau router.js
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
-
-  // Cek status login pengguna
   const isLoggedIn = authStore.checkLoginStatus()
 
-  // Jika rute memerlukan login
   if (to.meta.mustLogin) {
-    // Jika sudah login, lanjutkan
-    // Jika belum, arahkan ke halaman login
     return isLoggedIn ? next() : next('/login')
   }
 
-  // Jika pengguna sudah login, cegah akses ke halaman login/register dan arahkan ke beranda
   if (isLoggedIn && ['login', 'register'].includes(to.name)) {
     return next('/')
   }
 
-  // Lanjutkan ke rute tujuan
   next()
 })
+
 export default router

@@ -6,7 +6,6 @@
     data-bs-keyboard="false"
     tabindex="-1"
     aria-labelledby="staticBackdropLabel"
-    aria-hidden="true"
     ref="modalRef"
   >
     <div class="modal-dialog modal-dialog-scrollable">
@@ -25,7 +24,11 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" @click="confirm">
+          <button
+            type="button"
+            :class="[`btn btn-${actionType == 'add' ? 'primary' : 'warning'}`]"
+            @click="handleAction"
+          >
             {{ confirmButtonText }}
           </button>
         </div>
@@ -37,7 +40,7 @@
 <script setup>
 import { ref } from 'vue'
 
-// Props untuk judul modal dan teks tombol konfirmasi
+// Props untuk judul modal, teks tombol konfirmasi, dan tipe aksi
 const props = defineProps({
   title: {
     type: String,
@@ -46,16 +49,23 @@ const props = defineProps({
   confirmButtonText: {
     type: String,
     default: 'Understood'
+  },
+  actionType: {
+    type: String,
+    default: 'add' // 'add' atau 'edit'
+  },
+  data: {
+    type: Object,
+    default: () => ({})
   }
 })
 
 // Ref untuk merujuk ke elemen modal
 const modalRef = ref(null)
 
-// Fungsi untuk menangani konfirmasi tombol
-const confirm = () => {
-  // Memancarkan event 'confirm' ke komponen induk
-  emit('confirm')
+// Emit event 'confirm' dengan payload aksi dan data
+const handleAction = () => {
+  emit('confirm', { actionType: props.actionType, data: props.data })
 }
 
 // Memancarkan event ke komponen induk

@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useAuthStore } from '@/stores/Auth'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
+import { Toast } from '@/components/ToastAlert'
 
 const authStore = useAuthStore()
 
@@ -38,7 +39,7 @@ const handleSubmit = async () => {
   }
   disabledSubmit.value = !disabledSubmit.value //ubah ke true
 
-  Swal.fire(storeDataRegistrasi.alert)
+  Toast.fire(storeDataRegistrasi.alert)
   router.push('/login')
 }
 

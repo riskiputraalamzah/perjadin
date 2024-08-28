@@ -1,21 +1,24 @@
 <script setup>
 import { ref } from 'vue'
 import * as XLSX from 'xlsx'
+import { Toast } from '@/components/ToastAlert' // Import komponen toast alert
 
 const isDragging = ref(false)
 const uploading = ref(false)
+
 const progress = ref(0)
 
 const handleDrop = (event) => {
   event.preventDefault()
   isDragging.value = false
-  uploading.value = true
 
   const files = event.dataTransfer.files
-
   if (files.length) {
     const file = files[0]
-    simulateUpload(file)
+    if (validateFile(file)) {
+      uploading.value = true
+      simulateUpload(file)
+    }
   }
 }
 
@@ -31,11 +34,33 @@ const handleDragLeave = () => {
 const handleFileSelect = (event) => {
   const file = event.target.files[0]
   if (file) {
-    uploading.value = true
-    simulateUpload(file)
+    if (validateFile(file)) {
+      uploading.value = true
+      simulateUpload(file)
+    }
   }
 }
 
+// Fungsi validasi file, hanya memperbolehkan file Excel
+const validateFile = (file) => {
+  const allowedExtensions = /(\.xls|\.xlsx)$/i
+  if (!allowedExtensions.exec(file.name)) {
+    showToast('Please upload a valid Excel file (.xls or .xlsx).')
+    return false
+  }
+  return true
+}
+
+// Fungsi untuk menampilkan toast alert
+const showToast = (message) => {
+  // Menampilkan toast alert dengan pesan error
+  Toast.fire({
+    icon: 'error',
+    title: message
+  })
+}
+
+// Fungsi simulasi upload file
 const simulateUpload = (file) => {
   const interval = setInterval(() => {
     if (progress.value < 100) {
@@ -50,6 +75,7 @@ const simulateUpload = (file) => {
   }, 500) // Simulasi kecepatan upload
 }
 
+// Fungsi untuk membaca dan memproses file Excel
 const readFile = (file) => {
   const reader = new FileReader()
 
@@ -77,79 +103,10 @@ const readFile = (file) => {
 // Fungsi untuk memproses data ke format yang diinginkan
 const processData = (data) => {
   // Asumsikan baris pertama adalah header
-  const headers = data[0]
-  const rows = data.slice(1)
-
-  const formattedData = rows.map((row) => {
-    return {
-      user: {
-        nama: row[headers.indexOf('nama')] || null,
-        nip: row[headers.indexOf('nip')] || null,
-        golongan: row[headers.indexOf('golongan')] || null,
-        jabatan: row[headers.indexOf('jabatan')] || null
-      },
-      surat_tugas: {
-        no_st: row[headers.indexOf('nomor_st')] || null,
-        tgl_st: row[headers.indexOf('tanggal_st')] || null,
-        uraian_st: row[headers.indexOf('uraian_tugas')] || null
-      },
-      sppd: {
-        no: row[headers.indexOf('nomor_sppd')] || null,
-        tgl: row[headers.indexOf('tanggal_sppd')] || null,
-        tujuan: row[headers.indexOf('tujuan')] || null,
-        tgl_berangkat: row[headers.indexOf('tanggal_berangkat')] || null,
-        tgl_pulang: row[headers.indexOf('tanggal_pulang')] || null,
-        lama_penugasan: row[headers.indexOf('lama_penugasan')] || null
-      },
-      spm: {
-        nilai_spm: row[headers.indexOf('nilai_spm')] || null,
-        nomor_spm: row[headers.indexOf('nomor_spm')] || null,
-        tgl_spm: row[headers.indexOf('tanggal_spm')] || null,
-        meta_anggaran: row[headers.indexOf('mata_anggaran')] || null
-      },
-      sp2d: {
-        nomor_sp2d: row[headers.indexOf('nomor_sp2d')] || null,
-        tgl_sp2d: row[headers.indexOf('tanggal_sp2d')] || null
-      },
-      transportasi: {
-        namaSarana: row[headers.indexOf('nama_sarana')] || null,
-        kode_booking: row[headers.indexOf('kode_booking')] || null,
-        nomor_kursi: row[headers.indexOf('nomor_kursi')] || null
-      },
-      uang_transport: {
-        id: row[headers.indexOf('id')] || null,
-        idSppd: row[headers.indexOf('id_sppd')] || null,
-        nota_transport: row[headers.indexOf('nota_transport')] || null,
-        harga_tiket_berangkat: row[headers.indexOf('harga_tiket_berangkat')] || null,
-        harga_tiket_pulang: row[headers.indexOf('harga_tiket_pulang')] || null,
-        total_harga_tiket: row[headers.indexOf('total_harga_tiket')] || null
-      },
-      uang_penginapan: {
-        id_sppd: row[headers.indexOf('id_sppd')] || null,
-        tarif: row[headers.indexOf('tarif')] || null,
-        jumlah_per_hari_malam: row[headers.indexOf('jumlah_per_hari_malam')] || null,
-        jumlah_harga: row[headers.indexOf('jumlah_harga')] || null
-      },
-      uang_harian: {
-        id_sppd: row[headers.indexOf('id_sppd')] || null,
-        jumlah_hari: row[headers.indexOf('jumlah_hari')] || null,
-        satuan: row[headers.indexOf('satuan')] || null,
-        jumlah: row[headers.indexOf('jumlah')] || null
-      },
-      biaya_perjalanan_dinas: {
-        id_sppd: row[headers.indexOf('id_sppd')] || null,
-        keterangan: row[headers.indexOf('keterangan')] || null,
-        jumlah: row[headers.indexOf('jumlah')] || null
-      }
-    }
-  })
-
-  return {
-    tahun_anggaran: 2024, // Atau sesuai dengan data yang ada
-    satker: '', // Atau sesuai dengan data yang ada
-    rekap_perjalanan_dinas: formattedData
-  }
+  console.log(data)
 }
+
+// objek spm
 </script>
 
 <template>
@@ -158,6 +115,7 @@ const processData = (data) => {
     @drop="handleDrop"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
+    @drop.stop.prevent
   >
     <div v-if="uploading" class="upload-progress">
       <p>Uploading: {{ progress }}%</p>
@@ -169,9 +127,12 @@ const processData = (data) => {
     <div v-else>
       <label class="file-upload-label">
         <input type="file" @change="handleFileSelect" accept=".xlsx, .xls" />
-        <span class="upload-message"
-          >Drag and drop an Excel file here, or click to select one.</span
-        >
+        <div class="d-flex flex-column align-items-center">
+          <i class="ti ti-upload icon text-dark display-6"></i>
+          <span class="upload-message"
+            >Drag and drop an Excel file here, or click to select one.</span
+          >
+        </div>
       </label>
     </div>
   </div>
@@ -181,7 +142,8 @@ const processData = (data) => {
 .upload-container {
   width: 100%;
   height: 80vh;
-  border: 2px dashed #000000;
+  border: 2px dashed #6e6e6e;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;

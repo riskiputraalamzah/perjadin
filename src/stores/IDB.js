@@ -87,21 +87,21 @@ export const useIDBStore = defineStore('idb', () => {
 
   // mengambil data objek
   const fetchData = async (name) => {
-    // Periksa apakah nama objek valid
-    if (!name || name.trim() === '') {
-      console.error('Nama objek store tidak boleh kosong')
-      return [] // Kembalikan array kosong atau sesuai kebutuhan
-    }
-
-    // Inisialisasi database jika belum ada
-    if (!db.value) await initDB(name)
-
     try {
+      // Periksa apakah nama objek valid
+      if (!name?.trim()) {
+        console.error('Nama objek store tidak boleh kosong')
+        return [] // Kembalikan array kosong jika nama tidak valid
+      }
+
+      // Inisialisasi database jika belum ada atau jika transaksi gagal
+
+      await initDB(name)
+      console.log(name, 'berhasil di buatkan object store nya')
       // Mulai transaksi dan ambil data dari object store
       const tx = db.value.transaction(name, 'readonly')
       const store = tx.objectStore(name)
-      const result = await store.getAll()
-      return result
+      return await store.getAll()
     } catch (error) {
       console.error(`Gagal mengambil data ${name}:`, error)
       return [] // Kembalikan array kosong jika terjadi kesalahan
@@ -151,6 +151,19 @@ export const useIDBStore = defineStore('idb', () => {
     localStorage.setItem('user', newUser)
   }
 
+  const deleteItemById = async (nameStore, id) => {
+    if (!db.value) await initDB(nameStore)
+    try {
+      const transaction = db.value.transaction(nameStore, 'readwrite') // Ganti 'storeName' dengan nama object store Anda
+      const objectStore = transaction.objectStore(nameStore)
+      objectStore.delete(id)
+      return true
+    } catch (error) {
+      console.error(`Gagal Mendelete data ${nameStore}:`, error)
+      return false
+    }
+  }
+
   return {
     checkDB,
     storeToDB,
@@ -159,6 +172,7 @@ export const useIDBStore = defineStore('idb', () => {
     updateData,
     updateUserLocalStorage,
     createObjectURL,
-    deleteItem
+    deleteItem,
+    deleteItemById
   }
 })

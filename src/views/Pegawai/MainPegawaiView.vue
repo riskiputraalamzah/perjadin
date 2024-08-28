@@ -3,8 +3,11 @@ import { ref, onMounted } from 'vue'
 import ModalItem from '@/components/ModalItem.vue'
 import { useIDBStore } from '@/stores/IDB'
 import Swal from 'sweetalert2'
+import { Toast } from '@/components/ToastAlert'
 
 const idbStore = useIDBStore()
+
+const objectStore = 'pegawai'
 
 const dataPegawai = ref({
   namaPegawai: '',
@@ -15,18 +18,54 @@ const dataPegawai = ref({
 
 const pegawaiList = ref([])
 
+const loading = ref(true)
+
 // Fetch data dari IndexedDB ketika komponen di-mount
 onMounted(async () => {
-  pegawaiList.value = await idbStore.fetchData('pegawai')
+  console.log('onmounted pegawai')
+  pegawaiList.value = await idbStore.fetchData(objectStore)
+  loading.value = !loading.value
 })
 
+const validateForm = () => {
+  if (!dataPegawai.value.namaPegawai) {
+    Toast.fire({ icon: 'error', title: 'Nama Pegawai harus diisi' })
+    return false
+  }
+  if (!dataPegawai.value.nip) {
+    Toast.fire({ icon: 'error', title: 'NIP harus diisi' })
+    return false
+  }
+  if (!dataPegawai.value.golongan) {
+    Toast.fire({ icon: 'error', title: 'Golongan harus diisi' })
+    return false
+  }
+  if (!dataPegawai.value.jabatan) {
+    Toast.fire({ icon: 'error', title: 'Jabatan harus diisi' })
+    return false
+  }
+
+  return true
+}
+
 // Fungsi untuk menyimpan data pegawai
-const handleConfirm = async () => {
-  const data = JSON.parse(JSON.stringify(dataPegawai.value))
-  await idbStore.addItem('pegawai', data)
-  pegawaiList.value = await idbStore.fetchData('pegawai')
-  resetForm()
-  Swal.fire({ icon: 'success', title: 'Data Pegawai berhasil di tambahkan' })
+const handleConfirm = async ({ actionType }) => {
+  if (!validateForm()) return
+  try {
+    const jsonData = JSON.parse(JSON.stringify(dataPegawai.value))
+    if (actionType === 'add') {
+      await idbStore.addItem(objectStore, jsonData)
+      Toast.fire({ icon: 'success', title: 'Data Pegawai berhasil ditambahkan' })
+    } else if (actionType === 'edit') {
+      await idbStore.updateData(objectStore, 'id', jsonData.id, jsonData)
+      Toast.fire({ icon: 'success', title: 'Data Pegawai berhasil diubah' })
+    }
+    pegawaiList.value = await idbStore.fetchData(objectStore)
+    resetForm()
+  } catch (error) {
+    console.error('Error:', error)
+    Toast.fire({ icon: 'error', title: 'Terjadi kesalahan' })
+  }
 }
 
 // Reset form setelah data disimpan
@@ -38,6 +77,68 @@ const resetForm = () => {
     jabatan: ''
   }
 }
+
+const handleDelete = async (id) => {
+  // Konfirmasi dengan SweetAlert
+  const result = await Swal.fire({
+    title: `Hapus Data ${objectStore}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Ya',
+    cancelButtonText: 'Tidak',
+    cancelButtonColor: 'red'
+  })
+
+  // Jika pengguna mengonfirmasi
+  if (result.isConfirmed) {
+    try {
+      // Menghapus item dari IndexedDB
+      const deleteItem = await idbStore.deleteItemById(objectStore, id)
+
+      // Menampilkan notifikasi sukses
+      if (deleteItem) {
+        Toast.fire({ icon: 'success', title: `Data ${objectStore} berhasil dihapus` })
+        pegawaiList.value = await idbStore.fetchData(objectStore)
+      } else {
+        Toast.fire({ icon: 'error', title: 'Gagal menghapus data' })
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error)
+      Toast.fire({ icon: 'error', title: 'Terjadi kesalahan saat menghapus data' })
+    }
+  }
+}
+
+const openAddModal = () => {
+  resetForm()
+  modalProps.value = {
+    title: 'Tambah Data Pegawai',
+    confirmButtonText: 'Simpan',
+    actionType: 'add',
+    data: dataPegawai.value
+  }
+  // document.getElementById('staticBackdrop').click()
+}
+
+// Fungsi untuk menyiapkan modal edit
+const openEditModal = (pegawai) => {
+  dataPegawai.value = { ...pegawai }
+  modalProps.value = {
+    title: 'Edit Data Pegawai',
+    confirmButtonText: 'Update',
+    actionType: 'edit',
+    data: dataPegawai.value
+  }
+
+  // document.getElementById('staticBackdrop').click()
+}
+
+const modalProps = ref({
+  title: 'Tambah Data Pegawai',
+  confirmButtonText: 'Simpan',
+  actionType: 'add',
+  data: {}
+})
 </script>
 
 <template>
@@ -48,6 +149,8 @@ const resetForm = () => {
       <button
         type="button"
         class="btn btn-primary mb-4"
+        @click="openAddModal"
+        :disabled="loading"
         data-bs-toggle="modal"
         data-bs-target="#staticBackdrop"
       >
@@ -60,7 +163,7 @@ const resetForm = () => {
               <th scope="col">No</th>
               <th scope="col">Nama</th>
               <th scope="col">NIP</th>
-              <th scope="col">Gologan</th>
+              <th scope="col">Golongan</th>
               <th scope="col">Jabatan</th>
               <th scope="col" class="text-center">Action</th>
             </tr>
@@ -73,26 +176,42 @@ const resetForm = () => {
               <td v-text="pegawai.golongan"></td>
               <td v-text="pegawai.jabatan"></td>
               <td class="text-center">
-                <button class="btn-danger btn me-2 btn-sm">Hapus</button
-                ><button class="btn-sm btn-warning btn">Edit</button>
+                <button class="btn-danger btn me-2 btn-sm" @click="handleDelete(pegawai.id)">
+                  Hapus
+                </button>
+                <button
+                  data-bs-toggle="modal"
+                  data-bs-target="#staticBackdrop"
+                  class="btn-sm btn-warning btn"
+                  @click="openEditModal(pegawai)"
+                >
+                  Edit
+                </button>
               </td>
             </tr>
           </tbody>
 
           <tbody v-else>
             <tr>
-              <td colspan="6" class="text-center">Data masih kosong</td>
+              <td colspan="6" class="text-center">
+                {{ loading ? 'Loading Data...' : 'Data masih kosong' }}
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Modal Tambah data -->
-    <ModalItem title="Tambah Data Pegawai" confirmButtonText="Simpan" @confirm="handleConfirm">
+    <!-- Modal Tambah/Edit data -->
+    <ModalItem
+      :title="modalProps.title"
+      :confirmButtonText="modalProps.confirmButtonText"
+      :actionType="modalProps.actionType"
+      :data="modalProps.data"
+      @confirm="handleConfirm"
+    >
       <template #body>
-        <!-- Konten Modal yang Dinamis -->
-        <form>
+        <form @submit.prevent="handleConfirm">
           <div class="mb-3">
             <label for="namaPegawai" class="form-label">Nama Pegawai</label>
             <input

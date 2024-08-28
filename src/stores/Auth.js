@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useMainStore } from './main'
 import { useIDBStore } from './IDB'
+import Swal from 'sweetalert2'
 
 export const useAuthStore = defineStore('authStore', () => {
   const mainStore = useMainStore()
@@ -46,7 +47,16 @@ export const useAuthStore = defineStore('authStore', () => {
     // data success
     loginForm.value = data
 
-    localStorage.setItem('login', 'true')
+    // membuat expired time
+    const now = new Date()
+
+    // Menentukan waktu kedaluwarsa, milidetik
+    // 1 hari
+
+    const hari = 1
+    const expiryTime = now.getTime() + hari * 24 * 60 * 60 * 1000
+
+    localStorage.setItem('login', expiryTime)
     localStorage.setItem('user', JSON.stringify(isAvailable))
 
     // mengubah state login menjadi true
@@ -72,13 +82,37 @@ export const useAuthStore = defineStore('authStore', () => {
   }
 
   const checkLoginStatus = () => {
-    const loggedIn = localStorage.getItem('login')
-    const storeUser = localStorage.getItem('user')
+    try {
+      const loggedIn = parseInt(localStorage.getItem('login'))
+      const storeUser = JSON.parse(localStorage.getItem('user'))
 
-    if (loggedIn && storeUser) {
-      mainStore.login = true
-      loginForm.value = JSON.parse(storeUser)
-      return true
+      // Memeriksa apakah data login dan user ada
+      if (loggedIn && storeUser) {
+        const now = new Date().getTime()
+
+        // Memeriksa apakah waktu kedaluwarsa sudah lewat
+        if (now > loggedIn) {
+          // Jika data sudah expired, hapus dari localStorage
+          localStorage.removeItem('login')
+          localStorage.removeItem('user')
+          Swal.fire({
+            icon: 'error',
+            title: 'Login Kembali!',
+            text: 'Data Login Anda sudah usang, silakan login kembali!'
+          })
+          return false
+        }
+
+        // Set status login dan data user
+        mainStore.login = true
+        loginForm.value = storeUser
+        return true
+      }
+    } catch (error) {
+      // Jika terjadi error, data di localStorage mungkin tidak valid
+      console.error('Error parsing data from localStorage:', error)
+      localStorage.removeItem('login')
+      localStorage.removeItem('user')
     }
     return false
   }

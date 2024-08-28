@@ -1,4 +1,5 @@
 <script setup>
+import { onMounted } from 'vue'
 import { useIDBStore } from '@/stores/IDB'
 import { RouterView } from 'vue-router'
 import dbUser from '@/data/users.json'
@@ -9,7 +10,7 @@ const sources = [
   '/assets/libs/jquery/dist/jquery.min.js',
   '/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js'
 ]
-// Function to load a script
+
 const loadScript = (url) => {
   return new Promise((resolve, reject) => {
     const script = document.createElement('script')
@@ -22,31 +23,32 @@ const loadScript = (url) => {
   })
 }
 
-// Load scripts sequentially
 const loadScriptsSequentially = async () => {
   try {
     for (const script of sources) {
       await loadScript(script)
-      console.log(`Script loaded: ${script}`)
     }
-    console.log('All scripts loaded successfully')
-    // Optionally, execute code that depends on the scripts
+    console.log('All Auth scripts loaded successfully')
   } catch (error) {
     console.error('Error loading scripts:', error)
   }
 }
 
-loadScriptsSequentially()
-
 const initDB = async () => {
   const exist = await idbStore.checkDB()
   if (!exist) {
+    console.log('initDB called')
     await idbStore.storeToDB('users', dbUser)
-    return console.log('Seeder data berhasil')
+    console.log('Seeder data berhasil')
   }
 }
 
-initDB()
+// Gunakan onMounted untuk memastikan initDB hanya dipanggil saat komponen di-mount
+onMounted(() => {
+  console.log('Auth mounted')
+  loadScriptsSequentially()
+  initDB()
+})
 </script>
 
 <template>

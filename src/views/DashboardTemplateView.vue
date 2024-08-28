@@ -2,6 +2,7 @@
 import { RouterView } from 'vue-router'
 import SidebarItem from '@/components/SidebarItem.vue'
 import HeaderItem from '@/components/HeaderItem.vue'
+
 const sources = [
   '/assets/libs/jquery/dist/jquery.min.js',
   '/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js',
@@ -27,9 +28,9 @@ const loadScriptsSequentially = async () => {
   try {
     for (const script of sources) {
       await loadScript(script)
-      console.log(`Script loaded: ${script}`)
+      // console.log(`Script loaded: ${script}`)
     }
-    console.log('All scripts loaded successfully')
+    console.log('All Dashboard scripts loaded successfully')
     // Optionally, execute code that depends on the scripts
   } catch (error) {
     console.error('Error loading scripts:', error)
@@ -63,3 +64,11 @@ loadScriptsSequentially()
     </div>
   </div>
 </template>
+
+<style>
+table th,
+table td {
+  vertical-align: middle;
+  text-wrap: nowrap;
+}
+</style>
