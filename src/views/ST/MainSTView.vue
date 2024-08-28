@@ -10,6 +10,7 @@ const idbStore = useIDBStore()
 const objectStore = 'suratTugas'
 
 const dataSuratTugas = ref({
+  noST: '',
   tgl: '',
   uraian: ''
 })
@@ -27,8 +28,12 @@ onMounted(async () => {
 })
 
 const validateForm = () => {
+  if (!dataSuratTugas.value.noST) {
+    Toast.fire({ icon: 'error', title: 'Nomor Surat Tugas harus diisi' })
+    return false
+  }
   if (!dataSuratTugas.value.tgl) {
-    Toast.fire({ icon: 'error', title: 'Tanggal SPPD harus diisi' })
+    Toast.fire({ icon: 'error', title: 'Tanggal Surat Tugas harus diisi' })
     return false
   }
   if (!dataSuratTugas.value.uraian.trim()) {
@@ -53,6 +58,19 @@ const handleConfirm = async ({ actionType }) => {
     }
     suratTugasList.value = await idbStore.fetchData(objectStore)
     resetForm()
+
+    // Menutup modal menggunakan Bootstrap Modal API
+    const modalElement = document.getElementById('staticBackdrop')
+    const modalInstance = window.bootstrap.Modal.getInstance(modalElement)
+    if (modalInstance) {
+      modalInstance.hide() // Menutup modal
+    }
+
+    // Hapus backdrop secara manual jika masih ada
+    const backdrop = document.querySelector('.modal-backdrop')
+    if (backdrop) {
+      backdrop.remove()
+    }
   } catch (error) {
     console.error('Error:', error)
     Toast.fire({ icon: 'error', title: 'Terjadi kesalahan' })
@@ -62,6 +80,7 @@ const handleConfirm = async ({ actionType }) => {
 // Reset form setelah data disimpan
 const resetForm = () => {
   dataSuratTugas.value = {
+    noST: '',
     tgl: '',
     uraian: ''
   }
@@ -174,16 +193,16 @@ const formatDate = (dateString) => {
         <table class="table table-striped table-bordered">
           <thead>
             <tr>
-              <th scope="col">No</th>
-              <th scope="col">Tanggal Penugasan</th>
-              <th scope="col">Uraian Penugasan</th>
+              <th scope="col">No ST</th>
+              <th scope="col">Tanggal ST</th>
+              <th scope="col">Uraian ST</th>
 
               <th scope="col" class="text-center">Action</th>
             </tr>
           </thead>
           <tbody v-if="suratTugasList.length > 0">
             <tr v-for="(st, key) in suratTugasList" :key="key">
-              <td v-text="key + 1"></td>
+              <td v-text="st.noST"></td>
               <td v-text="formatDate(st.tgl)"></td>
               <td v-text="st.uraian"></td>
 
@@ -225,7 +244,11 @@ const formatDate = (dateString) => {
       <template #body>
         <form @submit.prevent="handleConfirm">
           <div class="mb-3">
-            <label for="tgl" class="form-label">Tanggal Penugasan</label>
+            <label for="noST" class="form-label">Nomor Surat Tugas</label>
+            <input v-model="dataSuratTugas.noST" type="text" class="form-control" id="noST" />
+          </div>
+          <div class="mb-3">
+            <label for="tgl" class="form-label">Tanggal Surat Tugas</label>
             <input
               v-model="dataSuratTugas.tgl"
               type="date"
@@ -235,7 +258,7 @@ const formatDate = (dateString) => {
             />
           </div>
           <div class="mb-3">
-            <label for="uraian" class="form-label">Uraian Penugasan</label>
+            <label for="uraian" class="form-label">Uraian</label>
 
             <textarea
               id="uraian"

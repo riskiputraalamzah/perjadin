@@ -98,7 +98,6 @@ const validateForm = () => {
 }
 
 const handleConfirm = async ({ actionType }) => {
-  // Panggil validasi form
   if (!validateForm()) return
   try {
     const jsonData = JSON.parse(JSON.stringify(dataSPPD.value))
@@ -111,6 +110,19 @@ const handleConfirm = async ({ actionType }) => {
     }
     SPPDList.value = await idbStore.fetchData(objectStore)
     resetForm()
+
+    // Menutup modal menggunakan Bootstrap Modal API
+    const modalElement = document.getElementById('staticBackdrop')
+    const modalInstance = window.bootstrap.Modal.getInstance(modalElement)
+    if (modalInstance) {
+      modalInstance.hide() // Menutup modal
+    }
+
+    // Hapus backdrop secara manual jika masih ada
+    const backdrop = document.querySelector('.modal-backdrop')
+    if (backdrop) {
+      backdrop.remove()
+    }
   } catch (error) {
     console.error('Error:', error)
     Toast.fire({ icon: 'error', title: 'Terjadi kesalahan' })
@@ -131,7 +143,7 @@ const handleDelete = async (id) => {
     try {
       const deleteItem = await idbStore.deleteItemById(objectStore, id)
       if (deleteItem) {
-        Toast.fire({ icon: 'success', title: `Data ${objectStore} berhasil dihapus` })
+        Toast.fire({ icon: 'success', title: `Data SPPD berhasil dihapus` })
         SPPDList.value = await idbStore.fetchData(objectStore)
       } else {
         Toast.fire({ icon: 'error', title: 'Gagal menghapus data' })
@@ -255,7 +267,7 @@ const minTglPulang = ref('')
 
           <tbody v-else>
             <tr>
-              <td colspan="6" class="text-center">
+              <td colspan="7" class="text-center">
                 {{ loading ? 'Loading Data...' : 'Data masih kosong' }}
               </td>
             </tr>

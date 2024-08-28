@@ -62,6 +62,19 @@ const handleConfirm = async ({ actionType }) => {
     }
     pegawaiList.value = await idbStore.fetchData(objectStore)
     resetForm()
+
+    // Menutup modal menggunakan Bootstrap Modal API
+    const modalElement = document.getElementById('staticBackdrop')
+    const modalInstance = window.bootstrap.Modal.getInstance(modalElement)
+    if (modalInstance) {
+      modalInstance.hide() // Menutup modal
+    }
+
+    // Hapus backdrop secara manual jika masih ada
+    const backdrop = document.querySelector('.modal-backdrop')
+    if (backdrop) {
+      backdrop.remove()
+    }
   } catch (error) {
     console.error('Error:', error)
     Toast.fire({ icon: 'error', title: 'Terjadi kesalahan' })

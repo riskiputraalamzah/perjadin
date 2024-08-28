@@ -72,6 +72,9 @@ export const useIDBStore = defineStore('idb', () => {
 
     // Simpan setiap item dalam array ke IndexedDB
     for (const item of data) {
+      // Tambahkan createdAt ke dalam data
+      item.createdAt = new Date().toISOString()
+
       await store.add(item)
     }
     await tx.done
@@ -101,7 +104,9 @@ export const useIDBStore = defineStore('idb', () => {
       // Mulai transaksi dan ambil data dari object store
       const tx = db.value.transaction(name, 'readonly')
       const store = tx.objectStore(name)
-      return await store.getAll()
+      const allData = await store.getAll()
+      // Sortir data berdasarkan createdAt
+      return allData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     } catch (error) {
       console.error(`Gagal mengambil data ${name}:`, error)
       return [] // Kembalikan array kosong jika terjadi kesalahan
@@ -113,6 +118,10 @@ export const useIDBStore = defineStore('idb', () => {
     if (!db.value) await initDB(name)
     const tx = db.value.transaction(name, 'readwrite')
     const store = tx.objectStore(name)
+
+    // Tambahkan createdAt ke dalam data
+    data.createdAt = new Date().toISOString()
+
     await store.add(data)
     await tx.done
   }

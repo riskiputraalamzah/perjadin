@@ -97,6 +97,14 @@
             </router-link>
           </li>
           <li class="sidebar-item">
+            <router-link to="/laporan" class="sidebar-link" exact-active-class="active">
+              <span>
+                <i class="ti ti-file-dollar"></i>
+              </span>
+              <span class="hide-menu">Data SPM/SP2D</span>
+            </router-link>
+          </li>
+          <li class="sidebar-item">
             <router-link to="/kwitansi" class="sidebar-link" exact-active-class="active">
               <span>
                 <i class="ti ti-file-invoice"></i>
