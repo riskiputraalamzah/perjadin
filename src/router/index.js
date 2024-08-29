@@ -48,10 +48,28 @@ const router = createRouter({
       component: () => import('../views/SPPD/MainSPPDView.vue')
     },
     {
+      path: '/delegasi-pegawai',
+      name: 'delegasi',
+      meta: { mustLogin: true },
+      component: () => import('../views/Pegawai/DelegasiViews.vue')
+    },
+    {
+      path: '/delegasi-pegawai/add',
+      name: 'addDelegasi',
+      meta: { mustLogin: true },
+      component: () => import('../views/Pegawai/AddDelegasiViews.vue')
+    },
+    {
       path: '/laporan',
       name: 'laporan',
       meta: { mustLogin: true },
       component: () => import('../views/LaporanView.vue')
+    },
+    {
+      path: '/cek-surat-perintah',
+      name: 'cekSp',
+      meta: { mustLogin: true },
+      component: () => import('../views/SuratPerintahView.vue')
     },
     {
       path: '/kwitansi',

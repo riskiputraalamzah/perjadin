@@ -10,6 +10,7 @@ const idbStore = useIDBStore()
 const objectStore = 'sppd'
 
 const dataSPPD = ref({
+  noSPPD: '',
   tgl: '',
   tujuan: '',
   tglBerangkat: '',
@@ -20,6 +21,7 @@ const dataSPPD = ref({
 // Reset form setelah data disimpan
 const resetForm = () => {
   dataSPPD.value = {
+    noSPPD: '',
     tgl: '',
     tujuan: '',
     tglBerangkat: '',
@@ -67,6 +69,10 @@ onMounted(async () => {
 })
 
 const validateForm = () => {
+  if (!dataSPPD.value.noSPPD) {
+    Toast.fire({ icon: 'error', title: 'Nomor SPPD harus diisi' })
+    return false
+  }
   if (!dataSPPD.value.tgl) {
     Toast.fire({ icon: 'error', title: 'Tanggal SPPD harus diisi' })
     return false
@@ -231,7 +237,7 @@ const minTglPulang = ref('')
         <table class="table table-striped table-bordered">
           <thead>
             <tr>
-              <th scope="col">No</th>
+              <th scope="col">No SPPD</th>
               <th scope="col">Tanggal SPPD</th>
               <th scope="col">Tujuan</th>
               <th scope="col">Tgl Berangkat</th>
@@ -242,7 +248,7 @@ const minTglPulang = ref('')
           </thead>
           <tbody v-if="SPPDList.length > 0">
             <tr v-for="(st, key) in SPPDList" :key="key">
-              <td v-text="key + 1"></td>
+              <td v-text="st.noSPPD"></td>
               <td v-text="formatDate(st.tgl)"></td>
               <td v-text="st.tujuan"></td>
               <td v-text="formatDate(st.tglBerangkat)"></td>
@@ -286,6 +292,10 @@ const minTglPulang = ref('')
     >
       <template #body>
         <form @submit.prevent="handleConfirm">
+          <div class="mb-3">
+            <label for="noSPPD" class="form-label">Nomor SPPD</label>
+            <input v-model="dataSPPD.noSPPD" type="text" class="form-control" id="noSPPD" />
+          </div>
           <div class="mb-3">
             <label for="tgl" class="form-label">Tanggal SPPD</label>
             <input
