@@ -9,4 +9,18 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 
+app.mixin({
+  methods: {
+    formatRupiah(value) {
+      if (!value) return ''
+      const formatted = value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+      return `Rp ${formatted}`
+    },
+    unformatRupiah(value) {
+      if (!value) return ''
+      return parseInt(value.replace(/[^0-9]/g, ''), 10)
+    }
+  }
+})
+
 app.mount('#app')

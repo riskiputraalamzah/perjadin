@@ -1,6 +1,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useIDBStore } from '@/stores/IDB'
+import Swal from 'sweetalert2'
+// import { Toast } from '@/components/ToastAlert'
+import { getCurrentInstance } from 'vue'
+
+const { proxy } = getCurrentInstance()
 
 const idbStore = useIDBStore()
 
@@ -8,13 +13,16 @@ const STData = ref([])
 const SPPDData = ref([])
 const PegawaiData = ref([])
 
+const loading = ref(true)
 onMounted(async () => {
   try {
     STData.value = await idbStore.fetchData('suratTugas')
     SPPDData.value = await idbStore.fetchData('sppd')
     PegawaiData.value = await idbStore.fetchData('pegawai')
+    loading.value = !loading.value
   } catch (error) {
     console.error('Error fetching data from IDB:', error)
+    loading.value = !loading.value
   }
 })
 
@@ -90,10 +98,78 @@ const expenseDetails = ref({
   totalAccommodation: 0,
   dailyRate: 0,
   dailyNumDays: 0,
-  totalDaily: 0
+  totalDaily: 0,
+  biayaLainnyaKeterangan: '',
+  biayaLainnyaJumlah: 0
 })
 
-// Watch for selectedST and selectedPegawai changes to auto-scroll
+const autoResizeTextarea = ref(null) // Referensi ke textarea
+
+// Fungsi untuk menyesuaikan tinggi textarea
+const adjustHeight = () => {
+  autoResizeTextarea.value.style.height = 'auto' // Reset tinggi untuk menghitung ulang
+  autoResizeTextarea.value.style.height = `${autoResizeTextarea.value.scrollHeight}px` // Atur tinggi berdasarkan konten
+}
+
+const validateAndFormatInput = (input) => {
+  // Hanya izinkan angka dan koma
+  const cleanedInput = input.replace(/[^0-9,]/g, '')
+  // Mengembalikan input yang dibersihkan
+  return cleanedInput
+}
+
+const handleConfirm = async () => {
+  // Konfirmasi dengan SweetAlert
+  const result = await Swal.fire({
+    title: `Apakah data sudah betul?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Ya',
+    cancelButtonText: 'Tidak',
+    cancelButtonColor: 'red'
+  })
+
+  // Jika pengguna mengonfirmasi
+  if (result.isConfirmed) {
+    let value = 0
+    const { value: totalSemuaDana } = await Swal.fire({
+      title: 'Total Dana Yang Diterima',
+      input: 'text',
+      inputValue: proxy.formatRupiah(value), // Format nilai awal menjadi Rp format
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Input tidak boleh kosong'
+        }
+        // Validasi jika input tidak valid
+        if (isNaN(proxy.unformatRupiah(value))) {
+          return 'Input harus berupa angka'
+        }
+      },
+
+      showCancelButton: true,
+      confirmButtonText: 'Lanjut',
+      cancelButtonText: 'Batal',
+      cancelButtonColor: 'red',
+      didOpen: () => {
+        // Mengakses elemen input Swal dan menambahkan event listener
+        const input = Swal.getInput()
+        input.addEventListener('input', (event) => {
+          // Hanya izinkan angka dan koma
+          const cleanedValue = event.target.value.replace(/[^0-9,]/g, '')
+          // Format nilai menjadi Rupiah
+          event.target.value = proxy.formatRupiah(proxy.unformatRupiah(cleanedValue))
+        })
+      }
+    })
+
+    if (totalSemuaDana) {
+      // Mengembalikan input yang diformat ke format angka asli
+      Swal.fire({ icon: 'success', title: 'Sek Sabar, gorong mari ...wkwkw' })
+      const originalValue = proxy.unformatRupiah(totalSemuaDana)
+      console.log(originalValue) // Cetak nilai asli setelah di-unformat
+    }
+  }
+}
 </script>
 
 <template>
@@ -160,7 +236,9 @@ const expenseDetails = ref({
                     </span>
                   </li>
                 </ul>
-                <div class="text-center" v-else>Loading</div>
+                <div class="text-center" v-else>
+                  {{ loading ? 'Loading' : 'Data ST masih kosong' }}
+                </div>
               </div>
             </div>
           </div>
@@ -224,7 +302,9 @@ const expenseDetails = ref({
                     </span>
                   </li>
                 </ul>
-                <div class="text-center" v-else>Loading</div>
+                <div class="text-center" v-else>
+                  {{ loading ? 'Loading' : 'Data SPPD masih kosong' }}
+                </div>
               </div>
             </div>
           </div>
@@ -287,7 +367,9 @@ const expenseDetails = ref({
                     </span>
                   </li>
                 </ul>
-                <div class="text-center" v-else>Loading</div>
+                <div class="text-center" v-else>
+                  {{ loading ? 'Loading' : 'Data Pegawai masih kosong' }}
+                </div>
               </div>
             </div>
           </div>
@@ -318,172 +400,205 @@ const expenseDetails = ref({
         <div class="mt-4">
           <h5 class="mb-3">Input Biaya Sarana dan Prasarana</h5>
 
-          <div class="mb-3">
-            <label for="hotelName" class="form-label">Nama Hotel/Penginapan</label>
-            <input
-              v-model="expenseDetails.hotelName"
-              type="text"
-              class="form-control"
-              id="hotelName"
-              placeholder="Masukkan nama hotel/penginapan"
-            />
+          <!-- Group 1: Data Hotel -->
+          <div class="card mb-3">
+            <div class="card-header">Hotel/Penginapan</div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label for="hotelName" class="form-label">Nama Hotel/Penginapan</label>
+                <input
+                  v-model="expenseDetails.hotelName"
+                  type="text"
+                  class="form-control"
+                  id="hotelName"
+                  placeholder="Masukkan nama hotel/penginapan"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="hotelVoucher" class="form-label">No Voucher/Invoice Hotel</label>
+                <input
+                  v-model="expenseDetails.hotelVoucher"
+                  type="text"
+                  class="form-control"
+                  id="hotelVoucher"
+                  placeholder="Masukkan no voucher/invoice hotel"
+                />
+              </div>
+            </div>
           </div>
 
-          <div class="mb-3">
-            <label for="hotelVoucher" class="form-label">No Voucher/Invoice Hotel</label>
-            <input
-              v-model="expenseDetails.hotelVoucher"
-              type="text"
-              class="form-control"
-              id="hotelVoucher"
-              placeholder="Masukkan no voucher/invoice hotel"
-            />
+          <!-- Group 2: Data Transportasi -->
+          <div class="card mb-3">
+            <div class="card-header">Transportasi</div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label for="transportationType" class="form-label">Jenis Transportasi</label>
+                <input
+                  v-model="expenseDetails.transportationType"
+                  type="text"
+                  class="form-control"
+                  id="transportationType"
+                  placeholder="Masukkan jenis transportasi"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="bookingCode" class="form-label">Kode Booking</label>
+                <input
+                  v-model="expenseDetails.bookingCode"
+                  type="text"
+                  class="form-control"
+                  id="bookingCode"
+                  placeholder="Masukkan kode booking"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="seatNumber" class="form-label">Nomor Kursi</label>
+                <input
+                  v-model="expenseDetails.seatNumber"
+                  type="text"
+                  class="form-control"
+                  id="seatNumber"
+                  placeholder="Masukkan nomor kursi"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="pricePP" class="form-label">Harga PP</label>
+                <input
+                  v-model="expenseDetails.pricePP"
+                  type="number"
+                  class="form-control"
+                  id="pricePP"
+                  placeholder="Masukkan harga PP"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="priceDeparture" class="form-label">Harga Tiket Berangkat</label>
+                <input
+                  v-model="expenseDetails.priceDeparture"
+                  type="number"
+                  class="form-control"
+                  id="priceDeparture"
+                  placeholder="Masukkan harga tiket berangkat"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="priceReturn" class="form-label">Harga Tiket Pulang</label>
+                <input
+                  v-model="expenseDetails.priceReturn"
+                  type="number"
+                  class="form-control"
+                  id="priceReturn"
+                  placeholder="Masukkan harga tiket pulang"
+                />
+              </div>
+            </div>
           </div>
 
-          <div class="mb-3">
-            <label for="transportationType" class="form-label">Transportasi</label>
-            <input
-              v-model="expenseDetails.transportationType"
-              type="text"
-              class="form-control"
-              id="transportationType"
-              placeholder="Masukkan jenis transportasi"
-            />
+          <!-- Group 3: Data Penginapan -->
+          <div class="card mb-3">
+            <div class="card-header">Penginapan</div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label for="rate" class="form-label">Tarif Satuan Penginapan</label>
+                <input
+                  v-model="expenseDetails.rate"
+                  type="number"
+                  class="form-control"
+                  id="rate"
+                  placeholder="Masukkan tarif satuan penginapan"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="numDays" class="form-label">Jumlah Hari/Malam</label>
+                <input
+                  v-model="expenseDetails.numDays"
+                  type="number"
+                  class="form-control"
+                  id="numDays"
+                  placeholder="Masukkan jumlah hari/malam"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="totalAccommodation" class="form-label">Jumlah Harga Penginapan</label>
+                <input
+                  v-model="expenseDetails.totalAccommodation"
+                  type="number"
+                  class="form-control"
+                  id="totalAccommodation"
+                  placeholder="Masukkan jumlah harga penginapan"
+                />
+              </div>
+            </div>
           </div>
 
-          <div class="mb-3">
-            <label for="bookingCode" class="form-label">Kode Booking Transportasi</label>
-            <input
-              v-model="expenseDetails.bookingCode"
-              type="text"
-              class="form-control"
-              id="bookingCode"
-              placeholder="Masukkan kode booking"
-            />
+          <!-- Group 4: Uang Harian -->
+          <div class="card mb-3">
+            <div class="card-header">Uang Harian</div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label for="dailyRate" class="form-label">Satuan Uang Harian (Rp)</label>
+                <input
+                  v-model="expenseDetails.dailyRate"
+                  type="number"
+                  class="form-control"
+                  id="dailyRate"
+                  placeholder="Masukkan satuan uang harian"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="dailyNumDays" class="form-label">Jumlah Hari</label>
+                <input
+                  v-model="expenseDetails.dailyNumDays"
+                  type="number"
+                  class="form-control"
+                  id="dailyNumDays"
+                  placeholder="Masukkan jumlah hari"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="totalDaily" class="form-label">Total Uang Harian</label>
+                <input
+                  v-model="expenseDetails.totalDaily"
+                  type="number"
+                  class="form-control"
+                  id="totalDaily"
+                  placeholder="Masukkan total uang harian"
+                />
+              </div>
+            </div>
+          </div>
+          <!-- Group 4: Uang Harian -->
+          <div class="card mb-3">
+            <div class="card-header">Biaya Lainnya (bila ada)</div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label for="uraian" class="form-label">Keterangan</label>
+
+                <textarea
+                  id="uraian"
+                  v-model="expenseDetails.biayaLainnyaKeterangan"
+                  class="form-control"
+                  placeholder="Isikan Keterangan Biaya Lainnya disini..."
+                  rows="1"
+                  ref="autoResizeTextarea"
+                  @input="adjustHeight"
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="dailyNumDays" class="form-label">Jumlah</label>
+                <input
+                  v-model="expenseDetails.biayaLainnyaJumlah"
+                  type="number"
+                  class="form-control"
+                  id="dailyNumDays"
+                  placeholder="Masukkan jumlah hari"
+                />
+              </div>
+            </div>
           </div>
 
-          <div class="mb-3">
-            <label for="seatNumber" class="form-label">Nomor Kursi</label>
-            <input
-              v-model="expenseDetails.seatNumber"
-              type="text"
-              class="form-control"
-              id="seatNumber"
-              placeholder="Masukkan nomor kursi"
-            />
-          </div>
-
-          <div class="mb-3">
-            <label for="pricePP" class="form-label">Harga PP</label>
-            <input
-              v-model="expenseDetails.pricePP"
-              type="number"
-              class="form-control"
-              id="pricePP"
-              placeholder="Masukkan harga PP"
-            />
-          </div>
-
-          <div class="mb-3">
-            <label for="priceDeparture" class="form-label">Harga Tiket Berangkat</label>
-            <input
-              v-model="expenseDetails.priceDeparture"
-              type="number"
-              class="form-control"
-              id="priceDeparture"
-              placeholder="Masukkan harga tiket berangkat"
-            />
-          </div>
-
-          <div class="mb-3">
-            <label for="priceReturn" class="form-label">Harga Tiket Pulang</label>
-            <input
-              v-model="expenseDetails.priceReturn"
-              type="number"
-              class="form-control"
-              id="priceReturn"
-              placeholder="Masukkan harga tiket pulang"
-            />
-          </div>
-
-          <div class="mb-3">
-            <label for="totalPrice" class="form-label">Total Harga</label>
-            <input
-              v-model="expenseDetails.totalPrice"
-              type="number"
-              class="form-control"
-              id="totalPrice"
-              placeholder="Masukkan total harga"
-            />
-          </div>
-
-          <!-- Uang Penginapan -->
-          <div class="mb-3">
-            <label for="rate" class="form-label">Tarif Satuan Penginapan</label>
-            <input
-              v-model="expenseDetails.rate"
-              type="number"
-              class="form-control"
-              id="rate"
-              placeholder="Masukkan tarif satuan penginapan"
-            />
-          </div>
-
-          <div class="mb-3">
-            <label for="numDays" class="form-label">Jumlah Hari/Malam</label>
-            <input
-              v-model="expenseDetails.numDays"
-              type="number"
-              class="form-control"
-              id="numDays"
-              placeholder="Masukkan jumlah hari/malam"
-            />
-          </div>
-
-          <div class="mb-3">
-            <label for="totalAccommodation" class="form-label">Jumlah Harga Penginapan</label>
-            <input
-              v-model="expenseDetails.totalAccommodation"
-              type="number"
-              class="form-control"
-              id="totalAccommodation"
-              placeholder="Masukkan jumlah harga penginapan"
-            />
-          </div>
-
-          <!-- Uang Harian -->
-          <div class="mb-3">
-            <label for="dailyRate" class="form-label">Satuan Uang Harian (Rp)</label>
-            <input
-              v-model="expenseDetails.dailyRate"
-              type="number"
-              class="form-control"
-              id="dailyRate"
-              placeholder="Masukkan satuan uang harian"
-            />
-          </div>
-
-          <div class="mb-3">
-            <label for="dailyNumDays" class="form-label">Jumlah Hari</label>
-            <input
-              v-model="expenseDetails.dailyNumDays"
-              type="number"
-              class="form-control"
-              id="dailyNumDays"
-              placeholder="Masukkan jumlah hari"
-            />
-          </div>
-
-          <div class="mb-3">
-            <label for="totalDaily" class="form-label">Total Uang Harian</label>
-            <input
-              v-model="expenseDetails.totalDaily"
-              type="number"
-              class="form-control"
-              id="totalDaily"
-              placeholder="Masukkan total uang harian"
-            />
-          </div>
+          <!-- Tombol Save -->
+          <button type="button" @click="handleConfirm" class="btn-save mt-3">Save</button>
         </div>
       </div>
     </div>
@@ -496,5 +611,51 @@ const expenseDetails = ref({
 
 .list-group-item {
   transition: background-color 0.3s ease;
+}
+
+.card-body {
+  padding: 1.5rem; /* Menambah padding di dalam card */
+}
+
+.card {
+  border-radius: 8px; /* Membulatkan sudut card */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Menambahkan bayangan pada card */
+}
+
+.form-control {
+  padding: 10px; /* Menambah padding pada input field */
+  border-radius: 5px; /* Membulatkan sudut input field */
+  border: 1px solid #ced4da; /* Warna border input field */
+}
+
+.form-control:focus {
+  border-color: #007bff; /* Warna border saat input field di klik */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Menambahkan efek shadow pada input field saat di klik */
+}
+
+.label {
+  font-weight: bold; /* Menebalkan label */
+  color: #343a40; /* Warna label */
+}
+
+.mb-3 label {
+  margin-bottom: 0.5rem; /* Menambahkan margin bawah pada label */
+}
+
+.mt-4 {
+  margin-top: 2rem; /* Menambah margin atas */
+}
+
+.btn-save {
+  background-color: #28a745; /* Warna tombol save */
+  color: #fff; /* Warna teks tombol save */
+  padding: 10px 20px; /* Padding tombol save */
+  border-radius: 5px; /* Membulatkan sudut tombol */
+  border: none; /* Menghilangkan border tombol */
+  transition: background-color 0.3s ease; /* Efek transisi saat hover */
+}
+
+.btn-save:hover {
+  background-color: #218838; /* Warna tombol saat hover */
 }
 </style>
