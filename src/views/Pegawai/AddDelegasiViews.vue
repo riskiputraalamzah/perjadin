@@ -1,23 +1,22 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useIDBStore } from '@/stores/IDB'
 
-const STData = ref([
-  { id: 1, nama: 'ST 001' },
-  { id: 2, nama: 'ST 002' },
-  { id: 3, nama: 'ST 003' }
-])
+const idbStore = useIDBStore()
 
-const SPPDData = ref([
-  { id: 1, nama: 'SPPD 001' },
-  { id: 2, nama: 'SPPD 002' },
-  { id: 3, nama: 'SPPD 003' }
-])
+const STData = ref([])
+const SPPDData = ref([])
+const PegawaiData = ref([])
 
-const PegawaiData = ref([
-  { id: 1, nama: 'Pegawai A' },
-  { id: 2, nama: 'Pegawai B' },
-  { id: 3, nama: 'Pegawai C' }
-])
+onMounted(async () => {
+  try {
+    STData.value = await idbStore.fetchData('suratTugas')
+    SPPDData.value = await idbStore.fetchData('sppd')
+    PegawaiData.value = await idbStore.fetchData('pegawai')
+  } catch (error) {
+    console.error('Error fetching data from IDB:', error)
+  }
+})
 
 // Search filter
 const searchST = ref('')
@@ -29,20 +28,28 @@ const selectedST = ref(null)
 const selectedSPPD = ref([])
 const selectedPegawai = ref([])
 
-// Computed properties for filtered lists
-const filteredST = computed(() =>
-  STData.value.filter((st) => st.nama.toLowerCase().includes(searchST.value.toLowerCase()))
-)
+// Computed properties for filtered lists with conditions
+const filteredST = computed(() => {
+  return STData.value.length
+    ? STData.value.filter((st) => st.noST.toLowerCase().includes(searchST.value.toLowerCase()))
+    : []
+})
 
-const filteredSPPD = computed(() =>
-  SPPDData.value.filter((sppd) => sppd.nama.toLowerCase().includes(searchSPPD.value.toLowerCase()))
-)
+const filteredSPPD = computed(() => {
+  return SPPDData.value.length
+    ? SPPDData.value.filter((sppd) =>
+        sppd.noSPPD.toLowerCase().includes(searchSPPD.value.toLowerCase())
+      )
+    : []
+})
 
-const filteredPegawai = computed(() =>
-  PegawaiData.value.filter((pegawai) =>
-    pegawai.nama.toLowerCase().includes(searchPegawai.value.toLowerCase())
-  )
-)
+const filteredPegawai = computed(() => {
+  return PegawaiData.value.length
+    ? PegawaiData.value.filter((pegawai) =>
+        pegawai.namaPegawai.toLowerCase().includes(searchPegawai.value.toLowerCase())
+      )
+    : []
+})
 
 // Selection methods
 const selectST = (st) => {
@@ -50,242 +57,261 @@ const selectST = (st) => {
 }
 
 const toggleSPPDSelection = (sppd) => {
-  if (selectedSPPD.value.includes(sppd)) {
-    selectedSPPD.value = selectedSPPD.value.filter((s) => s !== sppd)
+  const index = selectedSPPD.value.indexOf(sppd)
+  if (index > -1) {
+    selectedSPPD.value.splice(index, 1)
   } else {
     selectedSPPD.value.push(sppd)
   }
 }
 
 const togglePegawaiSelection = (pegawai) => {
-  if (selectedPegawai.value.includes(pegawai)) {
-    selectedPegawai.value = selectedPegawai.value.filter((p) => p !== pegawai)
+  const index = selectedPegawai.value.indexOf(pegawai)
+  if (index > -1) {
+    selectedPegawai.value.splice(index, 1)
   } else {
     selectedPegawai.value.push(pegawai)
   }
 }
 
-const hotelName = ref('')
-const hotelVoucher = ref('')
-const transportationType = ref('')
-const bookingCode = ref('')
-const seatNumber = ref('')
-const pricePP = ref(null)
-const priceDeparture = ref(null)
-const priceReturn = ref(null)
-const totalPrice = ref(null)
-const rate = ref(null)
-const numDays = ref(null)
-const totalAccommodation = ref(null)
-const dailyRate = ref(null)
-const dailyNumDays = ref(null)
-const totalDaily = ref(null)
+// Consolidate accommodation and travel details into one object
+const expenseDetails = ref({
+  hotelName: '',
+  hotelVoucher: '',
+  transportationType: '',
+  bookingCode: '',
+  seatNumber: '',
+  pricePP: 0,
+  priceDeparture: 0,
+  priceReturn: 0,
+  totalPrice: 0,
+  rate: 0,
+  numDays: 0,
+  totalAccommodation: 0,
+  dailyRate: 0,
+  dailyNumDays: 0,
+  totalDaily: 0
+})
+
+// Watch for selectedST and selectedPegawai changes to auto-scroll
 </script>
+
 <template>
   <div>
-    <div class="card-body card">
-      <div class="card-title mb-4">Form Pendelegasian Pegawai</div>
-      <div class="accordion accordion-flush" id="accordionFlushExample">
-        <!-- Accordion ST -->
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button
-              class="accordion-button px-0 bg-transparent text-dark fw-bold"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#flush-collapseOne"
-              aria-expanded="true"
-              aria-controls="flush-collapseOne"
-            >
-              <span
-                class="rounded-circle fs-1 text-bg-primary me-2 d-flex justify-content-center align-items-center"
-                style="width: 25px; height: 25px"
-                >1</span
+    <div class="card">
+      <h4 class="card-header fw-bold text-dark">Form Pendelegasian Pegawai</h4>
+      <div class="card-body">
+        <div class="accordion accordion-flush" id="accordionFlushExample">
+          <!-- Accordion ST -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button
+                class="accordion-button px-0 bg-transparent text-dark fw-bold"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#flush-collapseOne"
+                aria-expanded="true"
+                aria-controls="flush-collapseOne"
               >
-              Pilih Nomor ST
-            </button>
-          </h2>
-          <div
-            id="flush-collapseOne"
-            class="accordion-collapse collapse show"
-            data-bs-parent="#accordionFlushExample"
-          >
-            <div class="accordion-body px-0">
-              <input
-                v-model="searchST"
-                class="form-control mb-3"
-                type="text"
-                placeholder="Cari ST..."
-              />
-              <ul class="list-group">
-                <li
-                  v-for="st in filteredST"
-                  :key="st.id"
-                  class="list-group-item d-flex justify-content-between align-items-center"
-                  @click="selectST(st)"
-                  style="cursor: pointer"
+                <span
+                  class="rounded-circle fs-1 text-bg-primary me-2 d-flex justify-content-center align-items-center"
+                  style="width: 25px; height: 25px"
+                  >1</span
                 >
-                  {{ st.nama }}
-                  <span v-if="selectedST === st">
-                    <!-- Icon centang -->
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      class="icon icon-tabler icons-tabler-filled icon-tabler-circle-check text-success"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                      <path
-                        d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.293 5.953a1 1 0 0 0 -1.32 -.083l-.094 .083l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.403 1.403l.083 .094l2 2l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z"
-                      />
-                    </svg>
-                  </span>
-                </li>
-              </ul>
+                Pilih Nomor ST
+              </button>
+            </h2>
+            <div
+              id="flush-collapseOne"
+              class="accordion-collapse collapse show"
+              data-bs-parent="#accordionFlushExample"
+            >
+              <div class="accordion-body px-0">
+                <input
+                  v-model="searchST"
+                  class="form-control mb-3"
+                  type="text"
+                  placeholder="Cari ST..."
+                />
+                <ul class="list-group" v-if="filteredST.length">
+                  <li
+                    v-for="st in filteredST"
+                    :key="st.id"
+                    class="list-group-item d-flex justify-content-between align-items-center"
+                    @click="selectST(st)"
+                    style="cursor: pointer"
+                  >
+                    {{ st.noST }}
+                    <span v-if="selectedST === st">
+                      <!-- Icon centang -->
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="icon icon-tabler icons-tabler-filled icon-tabler-circle-check text-success"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path
+                          d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.293 5.953a1 1 0 0 0 -1.32 -.083l-.094 .083l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.403 1.403l.083 .094l2 2l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z"
+                        />
+                      </svg>
+                    </span>
+                  </li>
+                </ul>
+                <div class="text-center" v-else>Loading</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Accordion SPPD -->
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button
-              class="accordion-button px-0 bg-transparent text-dark fw-bold collapsed"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#flush-collapseTwo"
-              aria-expanded="false"
-              aria-controls="flush-collapseTwo"
-            >
-              <span
-                class="rounded-circle fs-1 text-bg-primary me-2 d-flex justify-content-center align-items-center"
-                style="width: 25px; height: 25px"
-                >2</span
+          <!-- Accordion SPPD -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button
+                class="accordion-button px-0 bg-transparent text-dark fw-bold collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#flush-collapseTwo"
+                aria-expanded="false"
+                aria-controls="flush-collapseTwo"
               >
-              Pilih Nomor SPPD
-              <sup class="text-info ms-1">*Opsional</sup>
-            </button>
-          </h2>
-          <div
-            id="flush-collapseTwo"
-            class="accordion-collapse collapse"
-            data-bs-parent="#accordionFlushExample"
-          >
-            <div class="accordion-body px-0">
-              <input
-                v-model="searchSPPD"
-                class="form-control mb-3"
-                type="text"
-                placeholder="Cari SPPD..."
-              />
-              <ul class="list-group">
-                <li
-                  v-for="sppd in filteredSPPD"
-                  :key="sppd.id"
-                  class="list-group-item d-flex justify-content-between align-items-center"
-                  @click="toggleSPPDSelection(sppd)"
-                  style="cursor: pointer"
+                <span
+                  class="rounded-circle fs-1 text-bg-primary me-2 d-flex justify-content-center align-items-center"
+                  style="width: 25px; height: 25px"
+                  >2</span
                 >
-                  {{ sppd.nama }}
-                  <span v-if="selectedSPPD.includes(sppd)">
-                    <!-- Icon centang -->
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      class="icon icon-tabler icons-tabler-filled icon-tabler-circle-check text-success"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                      <path
-                        d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.293 5.953a1 1 0 0 0 -1.32 -.083l-.094 .083l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.403 1.403l.083 .094l2 2l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z"
-                      />
-                    </svg>
-                  </span>
-                </li>
-              </ul>
+                Pilih Nomor SPPD
+                <sup class="text-info ms-1">*Opsional</sup>
+              </button>
+            </h2>
+            <div
+              id="flush-collapseTwo"
+              class="accordion-collapse collapse"
+              data-bs-parent="#accordionFlushExample"
+            >
+              <div class="accordion-body px-0">
+                <input
+                  v-model="searchSPPD"
+                  class="form-control mb-3"
+                  type="text"
+                  placeholder="Cari SPPD..."
+                />
+                <ul class="list-group" v-if="filteredSPPD.length">
+                  <li
+                    v-for="sppd in filteredSPPD"
+                    :key="sppd.id"
+                    class="list-group-item d-flex justify-content-between align-items-center"
+                    @click="toggleSPPDSelection(sppd)"
+                    style="cursor: pointer"
+                  >
+                    {{ sppd.noSPPD }}
+                    <span v-if="selectedSPPD.includes(sppd)">
+                      <!-- Icon centang -->
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="icon icon-tabler icons-tabler-filled icon-tabler-circle-check text-success"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path
+                          d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.293 5.953a1 1 0 0 0 -1.32 -.083l-.094 .083l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.403 1.403l.083 .094l2 2l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z"
+                        />
+                      </svg>
+                    </span>
+                  </li>
+                </ul>
+                <div class="text-center" v-else>Loading</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Accordion Pegawai -->
-        <div class="accordion-item">
-          <h2 class="accordion-header">
-            <button
-              class="accordion-button px-0 bg-transparent text-dark fw-bold collapsed"
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target="#flush-collapseThree"
-              aria-expanded="false"
-              aria-controls="flush-collapseThree"
-            >
-              <span
-                class="rounded-circle fs-1 text-bg-primary me-2 d-flex justify-content-center align-items-center"
-                style="width: 25px; height: 25px"
-                >3</span
+          <!-- Accordion Pegawai -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button
+                class="accordion-button px-0 bg-transparent text-dark fw-bold collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#flush-collapseThree"
+                aria-expanded="false"
+                aria-controls="flush-collapseThree"
               >
-              Pilih Pegawai
-            </button>
-          </h2>
-          <div
-            id="flush-collapseThree"
-            class="accordion-collapse collapse"
-            data-bs-parent="#accordionFlushExample"
-          >
-            <div class="accordion-body px-0">
-              <input
-                v-model="searchPegawai"
-                class="form-control mb-3"
-                type="text"
-                placeholder="Cari Pegawai..."
-              />
-              <ul class="list-group">
-                <li
-                  v-for="pegawai in filteredPegawai"
-                  :key="pegawai.id"
-                  class="list-group-item d-flex justify-content-between align-items-center"
-                  @click="togglePegawaiSelection(pegawai)"
-                  style="cursor: pointer"
+                <span
+                  class="rounded-circle fs-1 text-bg-primary me-2 d-flex justify-content-center align-items-center"
+                  style="width: 25px; height: 25px"
+                  >3</span
                 >
-                  {{ pegawai.nama }}
-                  <span v-if="selectedPegawai.includes(pegawai)">
-                    <!-- Icon centang -->
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      class="icon icon-tabler icons-tabler-filled icon-tabler-circle-check text-success"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                      <path
-                        d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.293 5.953a1 1 0 0 0 -1.32 -.083l-.094 .083l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.403 1.403l.083 .094l2 2l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z"
-                      />
-                    </svg>
-                  </span>
-                </li>
-              </ul>
+                Pilih Pegawai
+              </button>
+            </h2>
+            <div
+              id="flush-collapseThree"
+              class="accordion-collapse collapse"
+              data-bs-parent="#accordionFlushExample"
+            >
+              <div class="accordion-body px-0">
+                <input
+                  v-model="searchPegawai"
+                  class="form-control mb-3"
+                  type="text"
+                  placeholder="Cari Pegawai..."
+                />
+                <ul class="list-group" v-if="filteredPegawai.length">
+                  <li
+                    v-for="pegawai in filteredPegawai"
+                    :key="pegawai.id"
+                    class="list-group-item d-flex justify-content-between align-items-center"
+                    @click="togglePegawaiSelection(pegawai)"
+                    style="cursor: pointer"
+                  >
+                    {{ pegawai.namaPegawai }}
+                    <span v-if="selectedPegawai.includes(pegawai)">
+                      <!-- Icon centang -->
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="icon icon-tabler icons-tabler-filled icon-tabler-circle-check text-success"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path
+                          d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.293 5.953a1 1 0 0 0 -1.32 -.083l-.094 .083l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.403 1.403l.083 .094l2 2l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z"
+                        />
+                      </svg>
+                    </span>
+                  </li>
+                </ul>
+                <div class="text-center" v-else>Loading</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
     <!-- Card review hasil pilihan -->
-    <div v-if="selectedST && selectedSPPD.length && selectedPegawai.length" class="card mt-4">
-      <div class="card-header">Review Pilihan</div>
+    <div v-if="selectedST && selectedPegawai.length" class="card mt-4" ref="reviewSection">
+      <h4 class="card-header fw-bold text-dark">Review Pilihan</h4>
       <div class="card-body">
-        <p><strong>Nomor ST:</strong> {{ selectedST.nama }}</p>
+        <p><strong>NO ST</strong> : {{ selectedST ? selectedST.noST : 'Belum ada' }}</p>
         <p>
-          <strong>Nomor SPPD:</strong>
-          <span v-for="sppd in selectedSPPD" :key="sppd.id">{{ sppd.nama }}, </span>
+          <strong>NO SPPD</strong> :
+          {{
+            selectedSPPD.length ? selectedSPPD.map((sppd) => sppd.noSPPD).join(', ') : 'Belum ada'
+          }}
         </p>
         <p>
-          <strong>Pegawai:</strong>
-          <span v-for="pegawai in selectedPegawai" :key="pegawai.id">{{ pegawai.nama }}, </span>
+          <strong>Nama Pegawai</strong> :
+          {{
+            selectedPegawai.length
+              ? selectedPegawai.map((pegawai) => pegawai.namaPegawai).join(', ')
+              : 'Belum ada'
+          }}
         </p>
 
         <!-- Input Biaya Sarana dan Prasarana -->
@@ -295,7 +321,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="hotelName" class="form-label">Nama Hotel/Penginapan</label>
             <input
-              v-model="hotelName"
+              v-model="expenseDetails.hotelName"
               type="text"
               class="form-control"
               id="hotelName"
@@ -306,7 +332,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="hotelVoucher" class="form-label">No Voucher/Invoice Hotel</label>
             <input
-              v-model="hotelVoucher"
+              v-model="expenseDetails.hotelVoucher"
               type="text"
               class="form-control"
               id="hotelVoucher"
@@ -317,7 +343,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="transportationType" class="form-label">Transportasi</label>
             <input
-              v-model="transportationType"
+              v-model="expenseDetails.transportationType"
               type="text"
               class="form-control"
               id="transportationType"
@@ -328,7 +354,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="bookingCode" class="form-label">Kode Booking Transportasi</label>
             <input
-              v-model="bookingCode"
+              v-model="expenseDetails.bookingCode"
               type="text"
               class="form-control"
               id="bookingCode"
@@ -339,7 +365,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="seatNumber" class="form-label">Nomor Kursi</label>
             <input
-              v-model="seatNumber"
+              v-model="expenseDetails.seatNumber"
               type="text"
               class="form-control"
               id="seatNumber"
@@ -350,7 +376,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="pricePP" class="form-label">Harga PP</label>
             <input
-              v-model="pricePP"
+              v-model="expenseDetails.pricePP"
               type="number"
               class="form-control"
               id="pricePP"
@@ -361,7 +387,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="priceDeparture" class="form-label">Harga Tiket Berangkat</label>
             <input
-              v-model="priceDeparture"
+              v-model="expenseDetails.priceDeparture"
               type="number"
               class="form-control"
               id="priceDeparture"
@@ -372,7 +398,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="priceReturn" class="form-label">Harga Tiket Pulang</label>
             <input
-              v-model="priceReturn"
+              v-model="expenseDetails.priceReturn"
               type="number"
               class="form-control"
               id="priceReturn"
@@ -383,7 +409,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="totalPrice" class="form-label">Total Harga</label>
             <input
-              v-model="totalPrice"
+              v-model="expenseDetails.totalPrice"
               type="number"
               class="form-control"
               id="totalPrice"
@@ -395,7 +421,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="rate" class="form-label">Tarif Satuan Penginapan</label>
             <input
-              v-model="rate"
+              v-model="expenseDetails.rate"
               type="number"
               class="form-control"
               id="rate"
@@ -406,7 +432,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="numDays" class="form-label">Jumlah Hari/Malam</label>
             <input
-              v-model="numDays"
+              v-model="expenseDetails.numDays"
               type="number"
               class="form-control"
               id="numDays"
@@ -417,7 +443,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="totalAccommodation" class="form-label">Jumlah Harga Penginapan</label>
             <input
-              v-model="totalAccommodation"
+              v-model="expenseDetails.totalAccommodation"
               type="number"
               class="form-control"
               id="totalAccommodation"
@@ -429,7 +455,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="dailyRate" class="form-label">Satuan Uang Harian (Rp)</label>
             <input
-              v-model="dailyRate"
+              v-model="expenseDetails.dailyRate"
               type="number"
               class="form-control"
               id="dailyRate"
@@ -440,7 +466,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="dailyNumDays" class="form-label">Jumlah Hari</label>
             <input
-              v-model="dailyNumDays"
+              v-model="expenseDetails.dailyNumDays"
               type="number"
               class="form-control"
               id="dailyNumDays"
@@ -451,7 +477,7 @@ const totalDaily = ref(null)
           <div class="mb-3">
             <label for="totalDaily" class="form-label">Total Uang Harian</label>
             <input
-              v-model="totalDaily"
+              v-model="expenseDetails.totalDaily"
               type="number"
               class="form-control"
               id="totalDaily"
