@@ -1,12 +1,14 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, toRaw } from 'vue'
 import { useIDBStore } from '@/stores/IDB'
 import Swal from 'sweetalert2'
-// import { Toast } from '@/components/ToastAlert'
+import { Toast } from '@/components/ToastAlert'
+import { useRouter } from 'vue-router'
 import { getCurrentInstance } from 'vue'
 
 const { proxy } = getCurrentInstance()
 
+const router = useRouter()
 const idbStore = useIDBStore()
 
 const STData = ref([])
@@ -111,65 +113,171 @@ const adjustHeight = () => {
   autoResizeTextarea.value.style.height = `${autoResizeTextarea.value.scrollHeight}px` // Atur tinggi berdasarkan konten
 }
 
-const validateAndFormatInput = (input) => {
-  // Hanya izinkan angka dan koma
-  const cleanedInput = input.replace(/[^0-9,]/g, '')
-  // Mengembalikan input yang dibersihkan
-  return cleanedInput
-}
-
 const handleConfirm = async () => {
-  // Konfirmasi dengan SweetAlert
-  const result = await Swal.fire({
-    title: `Apakah data sudah betul?`,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'Ya',
-    cancelButtonText: 'Tidak',
-    cancelButtonColor: 'red'
-  })
-
-  // Jika pengguna mengonfirmasi
-  if (result.isConfirmed) {
-    let value = 0
-    const { value: totalSemuaDana } = await Swal.fire({
-      title: 'Total Dana Yang Diterima',
-      input: 'text',
-      inputValue: proxy.formatRupiah(value), // Format nilai awal menjadi Rp format
-      inputValidator: (value) => {
-        if (!value) {
-          return 'Input tidak boleh kosong'
-        }
-        // Validasi jika input tidak valid
-        if (isNaN(proxy.unformatRupiah(value))) {
-          return 'Input harus berupa angka'
-        }
-      },
-
+  try {
+    // Konfirmasi dengan SweetAlert
+    const confirmResult = await Swal.fire({
+      title: 'Apakah data sudah betul?',
+      icon: 'question',
       showCancelButton: true,
-      confirmButtonText: 'Lanjut',
-      cancelButtonText: 'Batal',
-      cancelButtonColor: 'red',
-      didOpen: () => {
-        // Mengakses elemen input Swal dan menambahkan event listener
-        const input = Swal.getInput()
-        input.addEventListener('input', (event) => {
-          // Hanya izinkan angka dan koma
-          const cleanedValue = event.target.value.replace(/[^0-9,]/g, '')
-          // Format nilai menjadi Rupiah
-          event.target.value = proxy.formatRupiah(proxy.unformatRupiah(cleanedValue))
-        })
-      }
+      confirmButtonText: 'Ya',
+      cancelButtonText: 'Tidak',
+      cancelButtonColor: 'red'
     })
 
+    // Jika pengguna mengonfirmasi
+    if (!confirmResult.isConfirmed) return
+
+    // SweetAlert untuk input dana
+    const totalSemuaDana = await promptTotalDana()
+
     if (totalSemuaDana) {
-      // Mengembalikan input yang diformat ke format angka asli
-      Swal.fire({ icon: 'success', title: 'Sek Sabar, gorong mari ...wkwkw' })
       const originalValue = proxy.unformatRupiah(totalSemuaDana)
-      console.log(originalValue) // Cetak nilai asli setelah di-unformat
+      updateExpenseDetails()
+
+      // Gabungkan data secara efisien dengan spread operator
+      const data = {
+        totalSemuaDana: originalValue,
+        ...expenseDetails.value
+      }
+
+      let rawData = {
+        ...data,
+        noST: toRaw(selectedST.value),
+        noSPPD: selectedSPPD.value.map(toRaw),
+        pegawai: selectedPegawai.value.map(toRaw)
+      }
+
+      // SweetAlert untuk input tambahan
+      const additionalData = await promptAdditionalInfo()
+
+      if (additionalData) {
+        rawData = { ...rawData, ...additionalData }
+      }
+
+      // tambahkan ke idb
+      await idbStore.addItem('delegasiPegawai', rawData)
+      Toast.fire({ icon: 'success', title: 'Data Delegasi Berhasil dibuat ' })
+      router.push({ name: 'delegasiPegawai' })
     }
+  } catch (error) {
+    console.error('Terjadi kesalahan:', error)
   }
 }
+
+// Fungsi untuk prompt total dana
+const promptTotalDana = async () => {
+  const { value: totalSemuaDana } = await Swal.fire({
+    title: 'Total Dana Yang Diterima',
+    input: 'text',
+    inputValue: proxy.formatRupiah(0),
+    inputValidator: (value) => {
+      if (!value) return 'Input tidak boleh kosong'
+      if (isNaN(proxy.unformatRupiah(value))) return 'Input harus berupa angka'
+    },
+    showCancelButton: true,
+    confirmButtonText: 'Lanjut',
+    cancelButtonText: 'Batal',
+    cancelButtonColor: 'red',
+    didOpen: () => {
+      const input = Swal.getInput()
+      input.addEventListener('input', (event) => {
+        const cleanedValue = event.target.value.replace(/[^0-9,]/g, '')
+        event.target.value = proxy.formatRupiah(proxy.unformatRupiah(cleanedValue))
+      })
+    }
+  })
+
+  return totalSemuaDana
+}
+
+// Fungsi untuk prompt informasi tambahan
+const promptAdditionalInfo = async () => {
+  const { value: additionalData } = await Swal.fire({
+    title: 'Informasi Lanjuttan!',
+    html: `
+      <input id="input1" class="swal2-input" type="text" placeholder="Jumlah Pengembalian">
+      <input id="input2" class="swal2-input" type="text" placeholder="Nomor Billing">
+      <input id="input3" class="swal2-input" type="text" placeholder="NTPN">
+    `,
+    focusConfirm: false,
+    preConfirm: () => {
+      const input1 = document.getElementById('input1').value
+      const input2 = document.getElementById('input2').value
+      const input3 = document.getElementById('input3').value
+
+      if (!input1 || !input2 || !input3) {
+        Swal.showValidationMessage('Semua bidang harus diisi!')
+        return false
+      }
+      if (isNaN(proxy.unformatRupiah(input1))) {
+        Swal.showValidationMessage('Jumlah Kembalian harus berisikan angka !')
+        return false
+      }
+
+      return {
+        jumlahPengembalian: input1,
+        nomorBilling: input2,
+        ntpn: input3
+      }
+    },
+    showCancelButton: true,
+    confirmButtonText: 'Simpan',
+    cancelButtonText: 'Lewati Saja',
+    didOpen: () => {
+      // Menambahkan event listener untuk input1
+      const input1 = document.getElementById('input1')
+      input1.addEventListener('input', (event) => {
+        // Hanya izinkan angka dan koma
+        const cleanedValue = event.target.value.replace(/[^0-9,]/g, '')
+        // Format nilai menjadi Rupiah
+        event.target.value = proxy.formatRupiah(proxy.unformatRupiah(cleanedValue))
+      })
+    }
+  })
+
+  return additionalData
+}
+
+// Utility function for calculation and formatting
+function calculateAndFormat(amount, rate, days) {
+  const total = rate * days
+  return proxy.formatRupiah(total)
+}
+
+// Computed properties for each calculation
+const sumTransport = computed(() => {
+  const totalPrice =
+    expenseDetails.value.pricePP +
+    expenseDetails.value.priceDeparture +
+    expenseDetails.value.priceReturn
+  return proxy.formatRupiah(totalPrice)
+})
+
+const sumTotalAccommodation = computed(() =>
+  calculateAndFormat(
+    expenseDetails.value.totalAccommodation,
+    expenseDetails.value.rate,
+    expenseDetails.value.numDays
+  )
+)
+
+const sumTotalDaily = computed(() =>
+  calculateAndFormat(
+    expenseDetails.value.totalDaily,
+    expenseDetails.value.dailyRate,
+    expenseDetails.value.dailyNumDays
+  )
+)
+
+// Update expenseDetails with unformatted values
+function updateExpenseDetails() {
+  expenseDetails.value.totalPrice = proxy.unformatRupiah(sumTransport.value)
+  expenseDetails.value.totalAccommodation = proxy.unformatRupiah(sumTotalAccommodation.value)
+  expenseDetails.value.totalDaily = proxy.unformatRupiah(sumTotalDaily.value)
+}
+
+// Call updateExpenseDetails when needed, e.g., after data changes
 </script>
 
 <template>
@@ -491,6 +599,16 @@ const handleConfirm = async () => {
                   placeholder="Masukkan harga tiket pulang"
                 />
               </div>
+              <div class="mb-3">
+                <label for="sumTransport" class="form-label">Jumlah Uang Transport</label>
+                <input
+                  v-model="sumTransport"
+                  type="text"
+                  class="form-control"
+                  id="sumTransport"
+                  readonly
+                />
+              </div>
             </div>
           </div>
 
@@ -521,10 +639,11 @@ const handleConfirm = async () => {
               <div class="mb-3">
                 <label for="totalAccommodation" class="form-label">Jumlah Harga Penginapan</label>
                 <input
-                  v-model="expenseDetails.totalAccommodation"
-                  type="number"
+                  v-model="sumTotalAccommodation"
+                  type="text"
                   class="form-control"
                   id="totalAccommodation"
+                  readonly
                   placeholder="Masukkan jumlah harga penginapan"
                 />
               </div>
@@ -558,10 +677,11 @@ const handleConfirm = async () => {
               <div class="mb-3">
                 <label for="totalDaily" class="form-label">Total Uang Harian</label>
                 <input
-                  v-model="expenseDetails.totalDaily"
-                  type="number"
+                  v-model="sumTotalDaily"
+                  type="text"
                   class="form-control"
                   id="totalDaily"
+                  readonly
                   placeholder="Masukkan total uang harian"
                 />
               </div>
