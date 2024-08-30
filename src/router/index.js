@@ -51,13 +51,19 @@ const router = createRouter({
       path: '/delegasi-pegawai',
       name: 'delegasi',
       meta: { mustLogin: true },
-      component: () => import('../views/Pegawai/DelegasiViews.vue')
+      component: () => import('../views/Delegasi/MainDelegasiViews.vue')
     },
     {
       path: '/delegasi-pegawai/add',
       name: 'addDelegasi',
       meta: { mustLogin: true },
-      component: () => import('../views/Pegawai/AddDelegasiViews.vue')
+      component: () => import('../views/Delegasi/AddDelegasiViews.vue')
+    },
+    {
+      path: '/delegasi-pegawai/:noST',
+      name: 'detailDelegasi',
+      meta: { mustLogin: true },
+      component: () => import('../views/Delegasi/DetailDelegasiViews.vue')
     },
     {
       path: '/laporan',

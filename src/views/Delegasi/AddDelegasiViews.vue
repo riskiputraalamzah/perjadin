@@ -14,6 +14,7 @@ const idbStore = useIDBStore()
 const STData = ref([])
 const SPPDData = ref([])
 const PegawaiData = ref([])
+const delegasiPegawai = ref([])
 
 const loading = ref(true)
 onMounted(async () => {
@@ -21,6 +22,7 @@ onMounted(async () => {
     STData.value = await idbStore.fetchData('suratTugas')
     SPPDData.value = await idbStore.fetchData('sppd')
     PegawaiData.value = await idbStore.fetchData('pegawai')
+    delegasiPegawai.value = await idbStore.fetchData('delegasiPegawai')
     loading.value = !loading.value
   } catch (error) {
     console.error('Error fetching data from IDB:', error)
@@ -41,15 +43,22 @@ const selectedPegawai = ref([])
 // Computed properties for filtered lists with conditions
 const filteredST = computed(() => {
   return STData.value.length
-    ? STData.value.filter((st) => st.noST.toLowerCase().includes(searchST.value.toLowerCase()))
+    ? STData.value
+        .filter((st) => !delegasiPegawai.value.some((used) => used.noST.noST === st.noST))
+        .filter((st) => st.noST.toLowerCase().includes(searchST.value.toLowerCase()))
     : []
 })
 
 const filteredSPPD = computed(() => {
   return SPPDData.value.length
-    ? SPPDData.value.filter((sppd) =>
-        sppd.noSPPD.toLowerCase().includes(searchSPPD.value.toLowerCase())
-      )
+    ? SPPDData.value
+        .filter(
+          (sppd) =>
+            !delegasiPegawai.value.some((groupObj) =>
+              groupObj.noSPPD.some((used) => used.noSPPD === sppd.noSPPD)
+            )
+        )
+        .filter((sppd) => sppd.noSPPD.toLowerCase().includes(searchSPPD.value.toLowerCase()))
     : []
 })
 
@@ -158,7 +167,7 @@ const handleConfirm = async () => {
       // tambahkan ke idb
       await idbStore.addItem('delegasiPegawai', rawData)
       Toast.fire({ icon: 'success', title: 'Data Delegasi Berhasil dibuat ' })
-      router.push({ name: 'delegasiPegawai' })
+      router.push({ name: 'delegasi' })
     }
   } catch (error) {
     console.error('Terjadi kesalahan:', error)

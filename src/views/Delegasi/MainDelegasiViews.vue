@@ -20,13 +20,6 @@ onMounted(async () => {
   loading.value = !loading.value
 })
 
-const colorBg = ['warning', 'primary', 'danger', 'info', 'success', 'secondary', 'light', 'dark']
-
-const getRandomColor = () => {
-  const randomIndex = Math.floor(Math.random() * colorBg.length)
-  return colorBg[randomIndex]
-}
-
 const handleDelete = async (id) => {
   // Konfirmasi dengan SweetAlert
   const result = await Swal.fire({
@@ -81,21 +74,28 @@ const handleDelete = async (id) => {
             <tr v-for="(pegawai, key) in delegasiPegawai" :key="key">
               <td v-text="pegawai.noST.noST"></td>
               <td>
-                <span
-                  :class="[`bg-${getRandomColor()}`, 'badge fs-1']"
-                  v-for="(sppd, i) in pegawai.noSPPD"
-                  :key="i"
-                  >{{ sppd.noSPPD }}</span
-                >
+                <div v-if="pegawai.noSPPD.length">
+                  <span
+                    :class="[`text-bg-dark py-2`, 'badge fs-1 me-2']"
+                    v-for="(sppd, i) in pegawai.noSPPD"
+                    :key="i"
+                    >{{ sppd.noSPPD }}</span
+                  >
+                </div>
+                <div v-else>Kosong</div>
               </td>
-              <td v-text="pegawai.pegawai.length"></td>
+              <td v-text="pegawai.pegawai.length + ' Orang'"></td>
 
               <td class="text-center">
                 <button class="btn-danger btn me-2 btn-sm" @click="handleDelete(pegawai.id)">
                   Hapus
                 </button>
                 <button class="btn-sm btn-warning me-2 btn">Edit</button>
-                <button class="btn-sm btn-info btn">Detail</button>
+                <router-link
+                  :to="{ name: 'detailDelegasi', params: { noST: pegawai.noST.noST } }"
+                  class="btn-sm btn-info btn"
+                  >Detail</router-link
+                >
               </td>
             </tr>
           </tbody>

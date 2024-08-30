@@ -308,14 +308,7 @@ const minTglPulang = ref('')
           </div>
           <div class="mb-3">
             <label for="uraian" class="form-label">Tujuan</label>
-            <textarea
-              id="uraian"
-              v-model="dataSPPD.tujuan"
-              class="form-control"
-              rows="1"
-              ref="autoResizeTextarea"
-              @input="adjustHeight"
-            ></textarea>
+            <input id="uraian" v-model="dataSPPD.tujuan" class="form-control" type="text" />
           </div>
           <div class="mb-3">
             <label for="tglBerangkat" class="form-label">Tanggal Keberangkatan</label>
