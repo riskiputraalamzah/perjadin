@@ -175,62 +175,59 @@ const formatDate = (dateString) => {
 </script>
 
 <template>
-  <div class="card">
-    <div class="card-body">
-      <h4 class="card-title mb-4">List Surat Tugas</h4>
-      <!-- Tombol untuk membuka modal -->
-      <button
-        type="button"
-        class="btn btn-primary mb-4"
-        @click="openAddModal"
-        :disabled="loading"
-        data-bs-toggle="modal"
-        data-bs-target="#staticBackdrop"
-      >
-        Tambah Data
-      </button>
-      <div class="table-responsive">
-        <table class="table table-striped table-bordered">
-          <thead>
-            <tr>
-              <th scope="col">No ST</th>
-              <th scope="col">Tanggal ST</th>
-              <th scope="col">Uraian ST</th>
+  <div>
+    <h1 class="text-dark fw-bold mb-4">List Surat Tugas</h1>
 
-              <th scope="col" class="text-center">Action</th>
-            </tr>
-          </thead>
-          <tbody v-if="suratTugasList.length > 0">
-            <tr v-for="(st, key) in suratTugasList" :key="key">
-              <td v-text="st.noST"></td>
-              <td v-text="formatDate(st.tgl)"></td>
-              <td v-text="st.uraian"></td>
+    <!-- Tombol untuk membuka modal -->
+    <button
+      type="button"
+      class="btn btn-primary mb-4"
+      @click="openAddModal"
+      :disabled="loading"
+      data-bs-toggle="modal"
+      data-bs-target="#staticBackdrop"
+    >
+      Tambah Data
+    </button>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">No ST</th>
+            <th scope="col">Tanggal ST</th>
+            <th scope="col">Uraian ST</th>
 
-              <td class="text-center">
-                <button class="btn-danger btn me-2 btn-sm" @click="handleDelete(st.id)">
-                  Hapus
-                </button>
-                <button
-                  data-bs-toggle="modal"
-                  data-bs-target="#staticBackdrop"
-                  class="btn-sm btn-warning btn"
-                  @click="openEditModal(st)"
-                >
-                  Edit
-                </button>
-              </td>
-            </tr>
-          </tbody>
+            <th scope="col" class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody v-if="suratTugasList.length > 0">
+          <tr v-for="(st, key) in suratTugasList" :key="key">
+            <td v-text="st.noST"></td>
+            <td v-text="formatDate(st.tgl)"></td>
+            <td v-text="st.uraian"></td>
 
-          <tbody v-else>
-            <tr>
-              <td colspan="6" class="text-center">
-                {{ loading ? 'Loading Data...' : 'Data masih kosong' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+            <td class="text-center">
+              <button class="btn-danger btn me-2 btn-sm" @click="handleDelete(st.id)">Hapus</button>
+              <button
+                data-bs-toggle="modal"
+                data-bs-target="#staticBackdrop"
+                class="btn-sm btn-warning btn"
+                @click="openEditModal(st)"
+              >
+                Edit
+              </button>
+            </td>
+          </tr>
+        </tbody>
+
+        <tbody v-else>
+          <tr>
+            <td colspan="6" class="text-center">
+              {{ loading ? 'Loading Data...' : 'Data masih kosong' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Modal Tambah/Edit data -->

@@ -19,6 +19,14 @@ app.mixin({
     unformatRupiah(value) {
       if (!value) return ''
       return parseInt(value.replace(/[^0-9]/g, ''), 10)
+    },
+    formatDate(dateString) {
+      if (!dateString) return ''
+
+      const options = { day: 'numeric', month: 'long', year: 'numeric' }
+      const date = new Date(dateString)
+
+      return date.toLocaleDateString('id-ID', options) // 'id-ID' untuk format Indonesia
     }
   }
 })

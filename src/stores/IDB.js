@@ -46,6 +46,7 @@ export const useIDBStore = defineStore('idb', () => {
   const updateData = async (nameObject, key, value, newData) => {
     if (!db.value) await initDB(nameObject)
     const transaction = db.value.transaction(nameObject, 'readwrite')
+    // return console.log({ nameObject, key, value, newData })
     const store = transaction.objectStore(nameObject)
 
     // Dapatkan data yang ingin diupdate
@@ -114,6 +115,7 @@ export const useIDBStore = defineStore('idb', () => {
   }
 
   // Fungsi untuk menambahkan data ke IndexedDB
+  // Fungsi untuk menambahkan data ke IndexedDB dan mengembalikan ID
   const addItem = async (name, data) => {
     if (!db.value) await initDB(name)
     const tx = db.value.transaction(name, 'readwrite')
@@ -122,9 +124,15 @@ export const useIDBStore = defineStore('idb', () => {
     // Tambahkan createdAt ke dalam data
     data.createdAt = new Date().toISOString()
 
-    await store.add(data)
+    // Tambahkan data dan dapatkan ID
+    const id = await store.add(data)
+
     await tx.done
+
+    // Kembalikan ID dari data yang baru ditambahkan
+    return id
   }
+
   const deleteItem = async (nameObject, key, value) => {
     // Inisialisasi database jika belum diinisialisasi
     if (!db.value) await initDB(nameObject)
@@ -173,10 +181,32 @@ export const useIDBStore = defineStore('idb', () => {
     }
   }
 
+  const findData = async (objectStore, id) => {
+    // Jika id null, langsung return false
+    if (id === null || id === undefined) {
+      return false
+    }
+
+    // Pastikan IndexedDB sudah diinisialisasi
+    if (!db.value) await initDB(dbName) // Ganti 'dbName' dengan nama database yang benar
+
+    const tx = db.value.transaction(objectStore, 'readonly') // Gunakan object store yang ditentukan
+    const store = tx.objectStore(objectStore)
+
+    // Ambil data berdasarkan id
+    const data = await store.get(id)
+
+    await tx.done
+
+    // Jika data ditemukan, kembalikan data, jika tidak, return false
+    return data ? data : false
+  }
+
   return {
     checkDB,
     storeToDB,
     fetchData,
+    findData,
     addItem,
     updateData,
     updateUserLocalStorage,

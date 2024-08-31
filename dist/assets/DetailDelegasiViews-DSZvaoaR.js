@@ -1,1 +1,0 @@
-import{_ as a}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c as s,o as t,a as e}from"./index-DuWg9Xy8.js";const c={},o=e("div",{class:"card"},[e("h4",{class:"card-header text-dark fw-bold"},"Detail Delegasi Pegawai")],-1),r=[o];function i(d,l){return t(),s("div",null,r)}const f=a(c,[["render",i]]);export{f as default};

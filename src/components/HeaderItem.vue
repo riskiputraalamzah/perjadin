@@ -8,7 +8,10 @@ const logout = () => {
     showCancelButton: true,
     confirmButtonText: 'Ya',
     cancelButtonText: 'Tidak',
-    cancelButtonColor: 'red'
+    cancelButtonColor: 'red',
+    backdrop: true,
+    allowOutsideClick: false,
+    allowEscapeKey: false
   }).then((result) => {
     if (result.isConfirmed) {
       localStorage.removeItem('login')

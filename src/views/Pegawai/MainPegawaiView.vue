@@ -155,64 +155,63 @@ const modalProps = ref({
 </script>
 
 <template>
-  <div class="card">
-    <div class="card-body">
-      <h4 class="card-title mb-4">List Pegawai</h4>
-      <!-- Tombol untuk membuka modal -->
-      <button
-        type="button"
-        class="btn btn-primary mb-4"
-        @click="openAddModal"
-        :disabled="loading"
-        data-bs-toggle="modal"
-        data-bs-target="#staticBackdrop"
-      >
-        Tambah Data
-      </button>
-      <div class="table-responsive">
-        <table class="table table-striped table-bordered">
-          <thead>
-            <tr>
-              <th scope="col">No</th>
-              <th scope="col">Nama</th>
-              <th scope="col">NIP</th>
-              <th scope="col">Golongan</th>
-              <th scope="col">Jabatan</th>
-              <th scope="col" class="text-center">Action</th>
-            </tr>
-          </thead>
-          <tbody v-if="pegawaiList.length > 0">
-            <tr v-for="(pegawai, key) in pegawaiList" :key="key">
-              <td v-text="key + 1"></td>
-              <td v-text="pegawai.namaPegawai"></td>
-              <td v-text="pegawai.nip"></td>
-              <td v-text="pegawai.golongan"></td>
-              <td v-text="pegawai.jabatan"></td>
-              <td class="text-center">
-                <button class="btn-danger btn me-2 btn-sm" @click="handleDelete(pegawai.id)">
-                  Hapus
-                </button>
-                <button
-                  data-bs-toggle="modal"
-                  data-bs-target="#staticBackdrop"
-                  class="btn-sm btn-warning btn"
-                  @click="openEditModal(pegawai)"
-                >
-                  Edit
-                </button>
-              </td>
-            </tr>
-          </tbody>
+  <div>
+    <h1 class="text-dark fw-bold mb-4">List Pegawai</h1>
 
-          <tbody v-else>
-            <tr>
-              <td colspan="6" class="text-center">
-                {{ loading ? 'Loading Data...' : 'Data masih kosong' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <!-- Tombol untuk membuka modal -->
+    <button
+      type="button"
+      class="btn btn-primary mb-4"
+      @click="openAddModal"
+      :disabled="loading"
+      data-bs-toggle="modal"
+      data-bs-target="#staticBackdrop"
+    >
+      Tambah Data
+    </button>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">No</th>
+            <th scope="col">Nama</th>
+            <th scope="col">NIP</th>
+            <th scope="col">Golongan</th>
+            <th scope="col">Jabatan</th>
+            <th scope="col" class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody v-if="pegawaiList.length > 0">
+          <tr v-for="(pegawai, key) in pegawaiList" :key="key">
+            <td v-text="key + 1"></td>
+            <td v-text="pegawai.namaPegawai"></td>
+            <td v-text="pegawai.nip"></td>
+            <td v-text="pegawai.golongan"></td>
+            <td v-text="pegawai.jabatan"></td>
+            <td class="text-center">
+              <button class="btn-danger btn me-2 btn-sm" @click="handleDelete(pegawai.id)">
+                Hapus
+              </button>
+              <button
+                data-bs-toggle="modal"
+                data-bs-target="#staticBackdrop"
+                class="btn-sm btn-warning btn"
+                @click="openEditModal(pegawai)"
+              >
+                Edit
+              </button>
+            </td>
+          </tr>
+        </tbody>
+
+        <tbody v-else>
+          <tr>
+            <td colspan="6" class="text-center">
+              {{ loading ? 'Loading Data...' : 'Data masih kosong' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Modal Tambah/Edit data -->

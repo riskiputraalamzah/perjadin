@@ -54,10 +54,10 @@ const router = createRouter({
       component: () => import('../views/Delegasi/MainDelegasiViews.vue')
     },
     {
-      path: '/delegasi-pegawai/add',
-      name: 'addDelegasi',
+      path: '/delegasi-pegawai/manage/:noST',
+      name: 'manageDelegasi',
       meta: { mustLogin: true },
-      component: () => import('../views/Delegasi/AddDelegasiViews.vue')
+      component: () => import('../views/Delegasi/ManageDelegasiViews.vue')
     },
     {
       path: '/delegasi-pegawai/:noST',

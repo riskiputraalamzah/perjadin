@@ -219,67 +219,63 @@ const minTglPulang = ref('')
 </script>
 
 <template>
-  <div class="card">
-    <div class="card-body">
-      <h4 class="card-title mb-4">List SPPD</h4>
-      <!-- Tombol untuk membuka modal -->
-      <button
-        type="button"
-        class="btn btn-primary mb-4"
-        @click="openAddModal"
-        :disabled="loading"
-        data-bs-toggle="modal"
-        data-bs-target="#staticBackdrop"
-      >
-        Tambah Data
-      </button>
-      <div class="table-responsive">
-        <table class="table table-striped table-bordered">
-          <thead>
-            <tr>
-              <th scope="col">No SPPD</th>
-              <th scope="col">Tanggal SPPD</th>
-              <th scope="col">Tujuan</th>
-              <th scope="col">Tgl Berangkat</th>
-              <th scope="col">Tgl Pulang</th>
-              <th scope="col">Lama Penugasan</th>
-              <th scope="col" class="text-center">Action</th>
-            </tr>
-          </thead>
-          <tbody v-if="SPPDList.length > 0">
-            <tr v-for="(st, key) in SPPDList" :key="key">
-              <td v-text="st.noSPPD"></td>
-              <td v-text="formatDate(st.tgl)"></td>
-              <td v-text="st.tujuan"></td>
-              <td v-text="formatDate(st.tglBerangkat)"></td>
-              <td v-text="formatDate(st.tglPulang)"></td>
-              <td v-text="st.lamaPenugasan + ' Hari'"></td>
+  <div>
+    <h1 class="text-dark fw-bold mb-4">List SPPD</h1>
 
-              <td class="text-center">
-                <button class="btn-danger btn me-2 btn-sm" @click="handleDelete(st.id)">
-                  Hapus
-                </button>
-                <button
-                  data-bs-toggle="modal"
-                  data-bs-target="#staticBackdrop"
-                  class="btn-sm btn-warning btn"
-                  @click="openEditModal(st)"
-                >
-                  Edit
-                </button>
-              </td>
-            </tr>
-          </tbody>
+    <!-- Tombol untuk membuka modal -->
+    <button
+      class="btn btn-primary mb-4"
+      @click="openAddModal"
+      :disabled="loading"
+      data-bs-toggle="modal"
+      data-bs-target="#staticBackdrop"
+    >
+      Tambah Data
+    </button>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">No SPPD</th>
+            <th scope="col">Tanggal SPPD</th>
+            <th scope="col">Tujuan</th>
+            <th scope="col">Tgl Berangkat</th>
+            <th scope="col">Tgl Pulang</th>
+            <th scope="col">Lama Penugasan</th>
+            <th scope="col" class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody v-if="SPPDList.length > 0">
+          <tr v-for="(st, key) in SPPDList" :key="key">
+            <td v-text="st.noSPPD"></td>
+            <td v-text="formatDate(st.tgl)"></td>
+            <td v-text="st.tujuan"></td>
+            <td v-text="formatDate(st.tglBerangkat)"></td>
+            <td v-text="formatDate(st.tglPulang)"></td>
+            <td v-text="st.lamaPenugasan + ' Hari'"></td>
 
-          <tbody v-else>
-            <tr>
-              <td colspan="7" class="text-center">
-                {{ loading ? 'Loading Data...' : 'Data masih kosong' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+            <td class="text-center">
+              <button class="btn-danger btn me-2 btn-sm" @click="handleDelete(st.id)">Hapus</button>
+              <button
+                data-bs-toggle="modal"
+                data-bs-target="#staticBackdrop"
+                class="btn-sm btn-warning btn"
+                @click="openEditModal(st)"
+              >
+                Edit
+              </button>
+            </td>
+          </tr>
+        </tbody>
+
+        <tbody v-else>
+          <tr>
+            <td colspan="7" class="text-center">
+              {{ loading ? 'Loading Data...' : 'Data masih kosong' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Modal Tambah/Edit data -->

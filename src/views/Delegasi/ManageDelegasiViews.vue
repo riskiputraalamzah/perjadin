@@ -2,28 +2,50 @@
 import { ref, computed, onMounted, toRaw } from 'vue'
 import { useIDBStore } from '@/stores/IDB'
 import Swal from 'sweetalert2'
-import { Toast } from '@/components/ToastAlert'
-import { useRouter } from 'vue-router'
+// import { Toast } from '@/components/ToastAlert'
+import { useRouter, useRoute } from 'vue-router'
 import { getCurrentInstance } from 'vue'
+import { useMainStore } from '@/stores/main'
 
 const { proxy } = getCurrentInstance()
 
 const router = useRouter()
+const route = useRoute()
+const mainStore = useMainStore()
 const idbStore = useIDBStore()
 
-const STData = ref([])
+// const STData = ref([])
 const SPPDData = ref([])
 const PegawaiData = ref([])
 const delegasiPegawai = ref([])
 
+const currentDelegasi = ref({})
+
 const loading = ref(true)
+
+const idDelegasi = mainStore.manageIdDelegasi
+
+const getDataDelegasi = async () => {
+  const data = await idbStore.findData('delegasiPegawai', idDelegasi)
+  if (!data) {
+    return router.push({ name: 'delegasi' })
+  }
+  SPPDData.value = await idbStore.fetchData('sppd')
+  PegawaiData.value = await idbStore.fetchData('pegawai')
+  delegasiPegawai.value = await idbStore.fetchData('delegasiPegawai')
+  currentDelegasi.value = data
+}
+
 onMounted(async () => {
   try {
-    STData.value = await idbStore.fetchData('suratTugas')
-    SPPDData.value = await idbStore.fetchData('sppd')
-    PegawaiData.value = await idbStore.fetchData('pegawai')
-    delegasiPegawai.value = await idbStore.fetchData('delegasiPegawai')
+    await getDataDelegasi()
+    // STData.value = await idbStore.fetchData('suratTugas')
+
     loading.value = !loading.value
+
+    setTimeout(() => {
+      document.body.removeAttribute('style')
+    }, 2000)
   } catch (error) {
     console.error('Error fetching data from IDB:', error)
     loading.value = !loading.value
@@ -31,67 +53,108 @@ onMounted(async () => {
 })
 
 // Search filter
-const searchST = ref('')
+// const searchST = ref('')
 const searchSPPD = ref('')
 const searchPegawai = ref('')
 
 // Selected data
-const selectedST = ref(null)
-const selectedSPPD = ref([])
-const selectedPegawai = ref([])
+// const selectedST = ref(null)
+const selectedSPPD = ref(null)
+const selectedPegawai = ref(null)
+// const selectedSPPD = ref([])
+// const selectedPegawai = ref([])
 
 // Computed properties for filtered lists with conditions
-const filteredST = computed(() => {
-  return STData.value.length
-    ? STData.value
-        .filter((st) => !delegasiPegawai.value.some((used) => used.noST.noST === st.noST))
-        .filter((st) => st.noST.toLowerCase().includes(searchST.value.toLowerCase()))
-    : []
-})
-
+// const filteredST = computed(() => {
+//   return STData.value.length
+//     ? STData.value
+//         .filter((st) => !delegasiPegawai.value.some((used) => used.noST.noST === st.noST))
+//         .filter((st) => st.noST.toLowerCase().includes(searchST.value.toLowerCase()))
+//     : []
+// })
+const resetData = () => {
+  selectedSPPD.value = null
+  selectedPegawai.value = null
+  expenseDetails.value = {
+    hotelName: '',
+    hotelVoucher: '',
+    transportationType: '',
+    bookingCode: '',
+    seatNumber: '',
+    pricePP: 0,
+    priceDeparture: 0,
+    priceReturn: 0,
+    totalPrice: 0,
+    rate: 0,
+    numDays: 0,
+    totalAccommodation: 0,
+    dailyRate: 0,
+    dailyNumDays: 0,
+    totalDaily: 0,
+    biayaLainnyaKeterangan: '',
+    biayaLainnyaJumlah: 0
+  }
+}
 const filteredSPPD = computed(() => {
   return SPPDData.value.length
     ? SPPDData.value
         .filter(
           (sppd) =>
             !delegasiPegawai.value.some((groupObj) =>
-              groupObj.noSPPD.some((used) => used.noSPPD === sppd.noSPPD)
+              groupObj.relation?.some((used) => used.noSPPD?.noSPPD === sppd.noSPPD)
             )
         )
         .filter((sppd) => sppd.noSPPD.toLowerCase().includes(searchSPPD.value.toLowerCase()))
     : []
 })
-
 const filteredPegawai = computed(() => {
-  return PegawaiData.value.length
-    ? PegawaiData.value.filter((pegawai) =>
-        pegawai.namaPegawai.toLowerCase().includes(searchPegawai.value.toLowerCase())
+  if (!PegawaiData.value.length || !currentDelegasi.value) return []
+
+  return PegawaiData.value
+    .filter((pegawai) => {
+      // Cek apakah pegawai sudah ada di currentDelegasi untuk noST yang sama
+      const isPegawaiInCurrentDelegasi = delegasiPegawai.value.some(
+        (groupObj) =>
+          groupObj.noST.noST === currentDelegasi.value.noST.noST &&
+          groupObj.relation?.some((used) => used.pegawai.namaPegawai === pegawai.namaPegawai)
       )
-    : []
+
+      // Pegawai hanya ditampilkan jika dia tidak ada di currentDelegasi
+      return !isPegawaiInCurrentDelegasi
+    })
+    .filter((pegawai) =>
+      pegawai.namaPegawai.toLowerCase().includes(searchPegawai.value.toLowerCase())
+    )
 })
 
 // Selection methods
-const selectST = (st) => {
-  selectedST.value = st
+// const selectST = (st) => {
+//   selectedST.value = st
+// }
+const selectSPPD = (st) => {
+  selectedSPPD.value = st
+}
+const selectPegawai = (st) => {
+  selectedPegawai.value = st
 }
 
-const toggleSPPDSelection = (sppd) => {
-  const index = selectedSPPD.value.indexOf(sppd)
-  if (index > -1) {
-    selectedSPPD.value.splice(index, 1)
-  } else {
-    selectedSPPD.value.push(sppd)
-  }
-}
+// const toggleSPPDSelection = (sppd) => {
+//   const index = selectedSPPD.value.indexOf(sppd)
+//   if (index > -1) {
+//     selectedSPPD.value.splice(index, 1)
+//   } else {
+//     selectedSPPD.value.push(sppd)
+//   }
+// }
 
-const togglePegawaiSelection = (pegawai) => {
-  const index = selectedPegawai.value.indexOf(pegawai)
-  if (index > -1) {
-    selectedPegawai.value.splice(index, 1)
-  } else {
-    selectedPegawai.value.push(pegawai)
-  }
-}
+// const togglePegawaiSelection = (pegawai) => {
+//   const index = selectedPegawai.value.indexOf(pegawai)
+//   if (index > -1) {
+//     selectedPegawai.value.splice(index, 1)
+//   } else {
+//     selectedPegawai.value.push(pegawai)
+//   }
+// }
 
 // Consolidate accommodation and travel details into one object
 const expenseDetails = ref({
@@ -131,7 +194,10 @@ const handleConfirm = async () => {
       showCancelButton: true,
       confirmButtonText: 'Ya',
       cancelButtonText: 'Tidak',
-      cancelButtonColor: 'red'
+      cancelButtonColor: 'red',
+      backdrop: true,
+      allowOutsideClick: false,
+      allowEscapeKey: false
     })
 
     // Jika pengguna mengonfirmasi
@@ -152,9 +218,8 @@ const handleConfirm = async () => {
 
       let rawData = {
         ...data,
-        noST: toRaw(selectedST.value),
-        noSPPD: selectedSPPD.value.map(toRaw),
-        pegawai: selectedPegawai.value.map(toRaw)
+        noSPPD: toRaw(selectedSPPD.value) ?? { noSPPD: '' },
+        pegawai: toRaw(selectedPegawai.value)
       }
 
       // SweetAlert untuk input tambahan
@@ -164,10 +229,33 @@ const handleConfirm = async () => {
         rawData = { ...rawData, ...additionalData }
       }
 
-      // tambahkan ke idb
-      await idbStore.addItem('delegasiPegawai', rawData)
-      Toast.fire({ icon: 'success', title: 'Data Delegasi Berhasil dibuat ' })
-      router.push({ name: 'delegasi' })
+      // Ambil data delegasiPegawai untuk memeriksa apakah relation sudah ada
+
+      let storeRawData = {}
+
+      if (currentDelegasi.value && currentDelegasi.value.relation) {
+        // Jika relation sudah ada, tambahkan rawData ke relation yang ada
+        storeRawData = {
+          ...toRaw(currentDelegasi.value),
+          relation: [...toRaw(currentDelegasi.value.relation), rawData]
+        }
+      } else {
+        // Jika relation belum ada, buat relation baru dengan rawData
+        storeRawData = { relation: [rawData] }
+      }
+
+      // Log hasil gabungan data
+      console.log({ storeRawData })
+
+      // Update data di IndexedDB
+      await idbStore.updateData('delegasiPegawai', 'id', idDelegasi, storeRawData)
+      await getDataDelegasi()
+      resetData()
+      Swal.fire({
+        icon: 'success',
+        title: `Delegasi Tugas telah Aktif`,
+        html: `NO ST <b>${route.params.noST}</b> telah berhasil di Aktifkan`
+      })
     }
   } catch (error) {
     console.error('Terjadi kesalahan:', error)
@@ -188,6 +276,9 @@ const promptTotalDana = async () => {
     confirmButtonText: 'Lanjut',
     cancelButtonText: 'Batal',
     cancelButtonColor: 'red',
+    backdrop: true,
+    allowOutsideClick: false,
+    allowEscapeKey: false,
     didOpen: () => {
       const input = Swal.getInput()
       input.addEventListener('input', (event) => {
@@ -233,6 +324,9 @@ const promptAdditionalInfo = async () => {
     showCancelButton: true,
     confirmButtonText: 'Simpan',
     cancelButtonText: 'Lewati Saja',
+    backdrop: true,
+    allowOutsideClick: false,
+    allowEscapeKey: false,
     didOpen: () => {
       // Menambahkan event listener untuk input1
       const input1 = document.getElementById('input1')
@@ -286,80 +380,34 @@ function updateExpenseDetails() {
   expenseDetails.value.totalDaily = proxy.unformatRupiah(sumTotalDaily.value)
 }
 
-// Call updateExpenseDetails when needed, e.g., after data changes
+const tambahDataST = ref(false)
+
+const shouldShowCard = computed(() => {
+  return 'relation' in currentDelegasi.value ? (tambahDataST.value ? true : false) : true
+})
 </script>
 
 <template>
   <div>
-    <div class="card">
-      <h4 class="card-header fw-bold text-dark">Form Pendelegasian Pegawai</h4>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <router-link :to="{ name: 'delegasi' }">Delegasi Pegawai</router-link>
+        </li>
+        <li class="breadcrumb-item" aria-current="page">Manage</li>
+      </ol>
+    </nav>
+    <h1 class="text-dark fw-bold mb-2">Manage Delegasi</h1>
+    <h5><b>No ST </b> {{ $route.params.noST }}</h5>
+    <div class="mb-4">
+      Status :
+      <span v-if="'relation' in currentDelegasi" class="badge text-bg-primary fs-1">Aktif</span>
+      <span v-else class="badge text-bg-danger fs-1">Non Aktif</span>
+    </div>
+    <div class="card" v-if="shouldShowCard">
+      <h5 class="card-header text-dark">Pilih SPPD dan Pegawai</h5>
       <div class="card-body">
         <div class="accordion accordion-flush" id="accordionFlushExample">
-          <!-- Accordion ST -->
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button
-                class="accordion-button px-0 bg-transparent text-dark fw-bold"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#flush-collapseOne"
-                aria-expanded="true"
-                aria-controls="flush-collapseOne"
-              >
-                <span
-                  class="rounded-circle fs-1 text-bg-primary me-2 d-flex justify-content-center align-items-center"
-                  style="width: 25px; height: 25px"
-                  >1</span
-                >
-                Pilih Nomor ST
-              </button>
-            </h2>
-            <div
-              id="flush-collapseOne"
-              class="accordion-collapse collapse show"
-              data-bs-parent="#accordionFlushExample"
-            >
-              <div class="accordion-body px-0">
-                <input
-                  v-model="searchST"
-                  class="form-control mb-3"
-                  type="text"
-                  placeholder="Cari ST..."
-                />
-                <ul class="list-group" v-if="filteredST.length">
-                  <li
-                    v-for="st in filteredST"
-                    :key="st.id"
-                    class="list-group-item d-flex justify-content-between align-items-center"
-                    @click="selectST(st)"
-                    style="cursor: pointer"
-                  >
-                    {{ st.noST }}
-                    <span v-if="selectedST === st">
-                      <!-- Icon centang -->
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        class="icon icon-tabler icons-tabler-filled icon-tabler-circle-check text-success"
-                      >
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path
-                          d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.293 5.953a1 1 0 0 0 -1.32 -.083l-.094 .083l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.403 1.403l.083 .094l2 2l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z"
-                        />
-                      </svg>
-                    </span>
-                  </li>
-                </ul>
-                <div class="text-center" v-else>
-                  {{ loading ? 'Loading' : 'Data ST masih kosong' }}
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- Accordion SPPD -->
           <div class="accordion-item">
             <h2 class="accordion-header">
@@ -374,7 +422,7 @@ function updateExpenseDetails() {
                 <span
                   class="rounded-circle fs-1 text-bg-primary me-2 d-flex justify-content-center align-items-center"
                   style="width: 25px; height: 25px"
-                  >2</span
+                  >1</span
                 >
                 Pilih Nomor SPPD
                 <sup class="text-info ms-1">*Opsional</sup>
@@ -397,11 +445,11 @@ function updateExpenseDetails() {
                     v-for="sppd in filteredSPPD"
                     :key="sppd.id"
                     class="list-group-item d-flex justify-content-between align-items-center"
-                    @click="toggleSPPDSelection(sppd)"
+                    @click="selectSPPD(sppd)"
                     style="cursor: pointer"
                   >
                     {{ sppd.noSPPD }}
-                    <span v-if="selectedSPPD.includes(sppd)">
+                    <span v-if="selectedSPPD === sppd">
                       <!-- Icon centang -->
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -440,7 +488,7 @@ function updateExpenseDetails() {
                 <span
                   class="rounded-circle fs-1 text-bg-primary me-2 d-flex justify-content-center align-items-center"
                   style="width: 25px; height: 25px"
-                  >3</span
+                  >2</span
                 >
                 Pilih Pegawai
               </button>
@@ -462,11 +510,11 @@ function updateExpenseDetails() {
                     v-for="pegawai in filteredPegawai"
                     :key="pegawai.id"
                     class="list-group-item d-flex justify-content-between align-items-center"
-                    @click="togglePegawaiSelection(pegawai)"
+                    @click="selectPegawai(pegawai)"
                     style="cursor: pointer"
                   >
                     {{ pegawai.namaPegawai }}
-                    <span v-if="selectedPegawai.includes(pegawai)">
+                    <span v-if="selectedPegawai === pegawai">
                       <!-- Icon centang -->
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -494,23 +542,17 @@ function updateExpenseDetails() {
       </div>
     </div>
     <!-- Card review hasil pilihan -->
-    <div v-if="selectedST && selectedPegawai.length" class="card mt-4" ref="reviewSection">
-      <h4 class="card-header fw-bold text-dark">Review Pilihan</h4>
+    <div v-if="selectedPegawai" class="card mt-4" ref="reviewSection">
+      <h5 class="card-header text-dark">Review Pilihan</h5>
       <div class="card-body">
-        <p><strong>NO ST</strong> : {{ selectedST ? selectedST.noST : 'Belum ada' }}</p>
+        <p><strong>NO ST</strong> : {{ $route.params.noST }}</p>
         <p>
           <strong>NO SPPD</strong> :
-          {{
-            selectedSPPD.length ? selectedSPPD.map((sppd) => sppd.noSPPD).join(', ') : 'Belum ada'
-          }}
+          {{ selectedSPPD ? selectedSPPD.noSPPD : 'Belum Ada' }}
         </p>
         <p>
           <strong>Nama Pegawai</strong> :
-          {{
-            selectedPegawai.length
-              ? selectedPegawai.map((pegawai) => pegawai.namaPegawai).join(', ')
-              : 'Belum ada'
-          }}
+          {{ selectedPegawai ? selectedPegawai.namaPegawai : 'Belum Ada' }}
         </p>
 
         <!-- Input Biaya Sarana dan Prasarana -->
@@ -728,6 +770,41 @@ function updateExpenseDetails() {
 
           <!-- Tombol Save -->
           <button type="button" @click="handleConfirm" class="btn-save mt-3">Save</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" v-if="'relation' in currentDelegasi">
+      <h5 class="card-header d-flex flex-wrap justify-content-between">
+        <span class="text-dark"> Rincian Delegasi </span>
+        <button
+          :class="[`btn-${tambahDataST ? 'danger' : 'primary'} btn`]"
+          @click="tambahDataST = !tambahDataST"
+        >
+          {{ tambahDataST ? 'Batal' : 'Tambah Data' }}
+        </button>
+      </h5>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped table-bordered">
+            <thead>
+              <tr>
+                <th scope="col">NO SPPD</th>
+                <th scope="col">Nama Pegawai</th>
+                <th scope="col" class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(dlg, key) in currentDelegasi.relation" :key="key">
+                <td v-text="dlg.noSPPD?.noSPPD"></td>
+                <td v-text="dlg.pegawai.namaPegawai"></td>
+
+                <td class="text-center">
+                  <button class="btn-danger btn me-2 btn-sm">Hapus</button>
+                  <button class="btn-sm btn-warning me-2 btn">Edit</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
