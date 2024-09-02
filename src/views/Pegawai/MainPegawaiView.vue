@@ -130,7 +130,6 @@ const openAddModal = () => {
     actionType: 'add',
     data: dataPegawai.value
   }
-  // document.getElementById('staticBackdrop').click()
 }
 
 // Fungsi untuk menyiapkan modal edit
@@ -142,8 +141,6 @@ const openEditModal = (pegawai) => {
     actionType: 'edit',
     data: dataPegawai.value
   }
-
-  // document.getElementById('staticBackdrop').click()
 }
 
 const modalProps = ref({

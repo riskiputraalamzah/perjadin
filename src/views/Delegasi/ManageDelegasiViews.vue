@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, toRaw } from 'vue'
 import { useIDBStore } from '@/stores/IDB'
 import Swal from 'sweetalert2'
-// import { Toast } from '@/components/ToastAlert'
+import { Toast } from '@/components/ToastAlert'
 import { useRouter, useRoute } from 'vue-router'
 import { getCurrentInstance } from 'vue'
 import { useMainStore } from '@/stores/main'
@@ -251,11 +251,20 @@ const handleConfirm = async () => {
       await idbStore.updateData('delegasiPegawai', 'id', idDelegasi, storeRawData)
       await getDataDelegasi()
       resetData()
-      Swal.fire({
-        icon: 'success',
-        title: `Delegasi Tugas telah Aktif`,
-        html: `NO ST <b>${route.params.noST}</b> telah berhasil di Aktifkan`
-      })
+      if (currentDelegasi.value.relation.length) {
+        Swal.fire({
+          icon: 'success',
+          title: `Data Berhasil Ditambahkan`,
+          html: `NO ST <b>${route.params.noST}</b> telah berhasil ditambahkan Data Delegasinya`
+        })
+        tambahDataST.value = !tambahDataST.value
+      } else {
+        Swal.fire({
+          icon: 'success',
+          title: `Delegasi Tugas telah Aktif`,
+          html: `NO ST <b>${route.params.noST}</b> telah berhasil di Aktifkan`
+        })
+      }
     }
   } catch (error) {
     console.error('Terjadi kesalahan:', error)
@@ -383,8 +392,41 @@ function updateExpenseDetails() {
 const tambahDataST = ref(false)
 
 const shouldShowCard = computed(() => {
-  return 'relation' in currentDelegasi.value ? (tambahDataST.value ? true : false) : true
+  return currentDelegasi.value.relation?.length ? (tambahDataST.value ? true : false) : true
 })
+
+const handleDeleteRelation = async (indexRelation) => {
+  try {
+    // Pastikan relation ada dan index valid sebelum menghapus
+    if (currentDelegasi.value.relation) {
+      console.log('Data sebelum penghapusan:', currentDelegasi.value)
+
+      // Hapus data dari key relation berdasarkan index
+      currentDelegasi.value.relation.splice(indexRelation, 1)
+
+      // Jika setelah dihapus, relation kosong, hapus key relation
+
+      console.log('Data setelah penghapusan:', currentDelegasi.value)
+
+      // Update data di IndexedDB
+      const updatedData = await idbStore.updateData(
+        'delegasiPegawai',
+        'id',
+        currentDelegasi.value.id,
+        toRaw(currentDelegasi.value)
+      )
+      await getDataDelegasi()
+      console.log('Data yang diupdate di IndexedDB:', updatedData)
+
+      // Notifikasi berhasil
+      Toast.fire({ icon: 'success', title: 'Data berhasil dihapus' })
+    } else {
+      console.error('Index tidak valid atau data tidak ditemukan')
+    }
+  } catch (error) {
+    console.error('Terjadi kesalahan saat menghapus data:', error)
+  }
+}
 </script>
 
 <template>
@@ -401,7 +443,7 @@ const shouldShowCard = computed(() => {
     <h5><b>No ST </b> {{ $route.params.noST }}</h5>
     <div class="mb-4">
       Status :
-      <span v-if="'relation' in currentDelegasi" class="badge text-bg-primary fs-1">Aktif</span>
+      <span v-if="currentDelegasi.relation?.length" class="badge text-bg-primary fs-1">Aktif</span>
       <span v-else class="badge text-bg-danger fs-1">Non Aktif</span>
     </div>
     <div class="card" v-if="shouldShowCard">
@@ -773,7 +815,7 @@ const shouldShowCard = computed(() => {
         </div>
       </div>
     </div>
-    <div class="card" v-if="'relation' in currentDelegasi">
+    <div class="card" v-if="currentDelegasi.relation?.length">
       <h5 class="card-header d-flex flex-wrap justify-content-between">
         <span class="text-dark"> Rincian Delegasi </span>
         <button
@@ -799,8 +841,9 @@ const shouldShowCard = computed(() => {
                 <td v-text="dlg.pegawai.namaPegawai"></td>
 
                 <td class="text-center">
-                  <button class="btn-danger btn me-2 btn-sm">Hapus</button>
-                  <button class="btn-sm btn-warning me-2 btn">Edit</button>
+                  <button @click="handleDeleteRelation(key)" class="btn-danger btn me-2 btn-sm">
+                    Hapus
+                  </button>
                 </td>
               </tr>
             </tbody>

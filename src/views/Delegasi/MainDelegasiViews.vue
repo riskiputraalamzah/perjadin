@@ -42,11 +42,12 @@ onMounted(async () => {
   loading.value = !loading.value
 })
 
-const handleDelete = async (id) => {
+const handleDelete = async (id, noST) => {
   // Konfirmasi dengan SweetAlert
   const result = await Swal.fire({
-    title: `Hapus Data ${objectStore}?`,
+    title: `Apakah Anda Yakin?`,
     icon: 'question',
+    html: `No ST <strong>${noST}</strong> akan di hapus`,
     showCancelButton: true,
     confirmButtonText: 'Ya',
     cancelButtonText: 'Tidak',
@@ -61,7 +62,7 @@ const handleDelete = async (id) => {
 
       // Menampilkan notifikasi sukses
       if (deleteItem) {
-        Toast.fire({ icon: 'success', title: `Data ${objectStore} berhasil dihapus` })
+        Toast.fire({ icon: 'success', title: `Data Delegasi Pegawai berhasil dihapus` })
         delegasiPegawai.value = await idbStore.fetchData(objectStore)
       } else {
         Toast.fire({ icon: 'error', title: 'Gagal menghapus data' })
@@ -74,51 +75,56 @@ const handleDelete = async (id) => {
 }
 // Selection methods
 const selectST = (st) => {
+  console.log({ st })
   selectedST.value = st
+  console.log(selectedST.value)
 }
 
-const handleConfirm = async () => {
+const handleConfirm = async ({ actionType, data }) => {
   try {
-    if (selectedST.value == null) {
+    if (!selectedST.value) {
       return Swal.fire({ icon: 'error', title: 'Silahkan Pilih NO ST terlebih dahulu' })
     }
 
-    const data = { noST: toRaw(selectedST.value) }
+    const dataStore = { noST: toRaw(selectedST.value) }
 
-    const idData = await idbStore.addItem('delegasiPegawai', data)
+    if (actionType === 'add') {
+      const idData = await idbStore.addItem('delegasiPegawai', dataStore)
+      mainStore.manageIdDelegasi = idData
 
-    mainStore.manageIdDelegasi = idData
+      const confirmResult = await Swal.fire({
+        title: 'NO ST berhasil dipilih',
+        icon: 'success',
+        text: 'Lanjutkan Penginputan Data',
+        showCancelButton: true,
+        confirmButtonText: 'Oke',
+        cancelButtonText: 'Nanti Aja',
+        cancelButtonColor: 'red',
+        backdrop: true,
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      })
 
-    const confirmResult = await Swal.fire({
-      title: 'NO ST berhasil dipilih',
-      icon: 'success',
-      text: 'Lanjutkan Penginputan Data',
-      showCancelButton: true,
-      confirmButtonText: 'Oke',
-      cancelButtonText: 'Nanti Aja',
-      cancelButtonColor: 'red',
-      backdrop: true,
-      allowOutsideClick: false,
-      allowEscapeKey: false
-    })
+      if (confirmResult.isConfirmed) {
+        await router.push({ name: 'manageDelegasi', params: { noST: selectedST.value.noST } })
+      } else {
+        delegasiPegawai.value = await idbStore.fetchData(objectStore)
+      }
+
+      setTimeout(() => document.body.removeAttribute('style'), 2000)
+    } else if (actionType === 'edit') {
+      await idbStore.updateData('delegasiPegawai', 'id', data.id, dataStore)
+      delegasiPegawai.value = await idbStore.fetchData(objectStore)
+      Toast.fire({ icon: 'success', title: 'NO ST berhasil diubah' })
+    }
 
     // Menutup modal menggunakan Bootstrap Modal API
     const modalElement = document.getElementById('staticBackdrop')
     const modalInstance = window.bootstrap.Modal.getInstance(modalElement)
-    if (modalInstance) {
-      await modalInstance.hide() // Pastikan modal ditutup sebelum lanjut
-    }
+    modalInstance?.hide() // Tutup modal jika instance ada
+
+    // Menghapus semua backdrop modal yang tersisa
     document.querySelectorAll('.modal-backdrop').forEach((modal) => modal.remove())
-
-    if (confirmResult.isConfirmed) {
-      await router.push({ name: 'manageDelegasi', params: { noST: selectedST.value.noST } })
-    } else {
-      delegasiPegawai.value = await idbStore.fetchData(objectStore)
-    }
-
-    setTimeout(() => {
-      document.body.removeAttribute('style')
-    }, 2000)
   } catch (error) {
     console.error('Terjadi kesalahan:', error)
   }
@@ -128,11 +134,49 @@ const manageData = (id, noST) => {
   mainStore.manageIdDelegasi = id
   router.push({ name: 'manageDelegasi', params: { noST } })
 }
+
+const openAddModal = () => {
+  selectedST.value = null
+  modalProps.value = {
+    title: 'Pilih Nomor ST',
+    confirmButtonText: 'Simpan',
+    actionType: 'add',
+    data: {}
+  }
+}
+
+// Fungsi untuk menyiapkan modal edit
+const openEditModal = (id, noST) => {
+  selectedST.value = noST
+  console.log(selectedST.value)
+  console.log(id)
+  modalProps.value = {
+    title: 'Edit Data Pegawai',
+    confirmButtonText: 'Update',
+    actionType: 'edit',
+    data: {
+      id
+    }
+  }
+}
+
+const modalProps = ref({
+  title: 'Tambah Data Pegawai',
+  confirmButtonText: 'Simpan',
+  actionType: 'add',
+  data: {}
+})
 </script>
 <template>
   <div>
     <h1 class="text-dark fw-bold mb-4">List Delegasi Pegawai</h1>
-    <button data-bs-toggle="modal" data-bs-target="#staticBackdrop" class="btn btn-primary mb-4">
+    <button
+      @click="openAddModal"
+      :disabled="loading"
+      data-bs-toggle="modal"
+      data-bs-target="#staticBackdrop"
+      class="btn btn-primary mb-4"
+    >
       Tambah Data
     </button>
     <div class="table-responsive">
@@ -168,7 +212,7 @@ const manageData = (id, noST) => {
               <span v-else>Kosong</span>
             </td>
             <td class="text-center">
-              <button v-if="dlg.hasOwnProperty('relation')" class="btn btn-primary">Aktif</button>
+              <button v-if="dlg.relation.length" class="btn btn-primary">Aktif</button>
               <button v-else class="btn btn-danger">Non Aktif</button>
             </td>
             <td class="text-center">
@@ -178,10 +222,20 @@ const manageData = (id, noST) => {
               >
                 Manage Data
               </button>
-              <button class="btn-danger btn me-2 btn-sm" @click="handleDelete(dlg.id)">
+              <button
+                class="btn-danger btn me-2 btn-sm"
+                @click="handleDelete(dlg.id, dlg.noST.noST)"
+              >
                 Hapus
               </button>
-              <button class="btn-sm btn-warning me-2 btn">Edit</button>
+              <button
+                data-bs-toggle="modal"
+                data-bs-target="#staticBackdrop"
+                @click="openEditModal(dlg.id, dlg.noST)"
+                class="btn-sm btn-warning me-2 btn"
+              >
+                Edit
+              </button>
               <router-link
                 :to="{ name: 'detailDelegasi', params: { noST: dlg.noST.noST } }"
                 class="btn-sm btn-info btn"
@@ -201,9 +255,10 @@ const manageData = (id, noST) => {
       </table>
     </div>
     <ModalItem
-      title="Pilih Nomor ST"
-      confirmButtonText="Simpan"
-      actionType="add"
+      :title="modalProps.title"
+      :confirmButtonText="modalProps.confirmButtonText"
+      :actionType="modalProps.actionType"
+      :data="modalProps.data"
       @confirm="handleConfirm"
     >
       <template #body>

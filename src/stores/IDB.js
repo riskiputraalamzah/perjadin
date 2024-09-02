@@ -46,26 +46,28 @@ export const useIDBStore = defineStore('idb', () => {
   const updateData = async (nameObject, key, value, newData) => {
     if (!db.value) await initDB(nameObject)
     const transaction = db.value.transaction(nameObject, 'readwrite')
-    // return console.log({ nameObject, key, value, newData })
     const store = transaction.objectStore(nameObject)
 
-    // Dapatkan data yang ingin diupdate
-    const allData = await store.getAll()
+    try {
+      // Gunakan key utama untuk mendapatkan data yang ingin diupdate
+      const data = await store.get(value) // Mengambil data berdasarkan key utama
 
-    const findData = allData.find((data) => data[key] === value)
-    const findDataIsExist = findData ? findData.id : null // Mengembalikan ID jika ditemukan
+      if (data) {
+        // Gabungkan data lama dengan data baru
+        const updatedData = { ...data, ...newData }
+        await store.put(updatedData) // Update data
 
-    // Dapatkan data yang ingin diupdate
-    const data = await store.get(findDataIsExist)
-    // Jika data ditemukan, update dengan newData
-    if (data) {
-      const updatedData = { ...data, ...newData } // Gabungkan data lama dengan data baru
-      await store.put(updatedData) // Update data
-      return updatedData
-    } else {
-      throw new Error(`Data ${nameObject} dengan ${key} ${value} tidak ditemukan.`)
+        console.log('Data berhasil diupdate:', updatedData)
+        return updatedData
+      } else {
+        throw new Error(`Data ${nameObject} dengan ${key} ${value} tidak ditemukan.`)
+      }
+    } catch (error) {
+      console.error('Error saat mengupdate data di IndexedDB:', error)
+      throw error
     }
   }
+
   // tambahkan data objek ke dalam yang telah di buat oleh initDB
   const saveToIndexedDB = async (name, data) => {
     const tx = db.value.transaction(name, 'readwrite')

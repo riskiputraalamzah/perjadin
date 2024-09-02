@@ -1,0 +1,1 @@
+import{_ as e}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c as r,o as t}from"./index-DYrpQ_Z4.js";const c={};function n(o,a){return t(),r("div",null,"surat perintah")}const i=e(c,[["render",n]]);export{i as default};
