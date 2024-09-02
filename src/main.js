@@ -3,12 +3,13 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
+import VueApexCharts from 'vue3-apexcharts'
 
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
-
+app.use(VueApexCharts)
 app.mixin({
   methods: {
     formatRupiah(value) {
@@ -27,6 +28,14 @@ app.mixin({
       const date = new Date(dateString)
 
       return date.toLocaleDateString('id-ID', options) // 'id-ID' untuk format Indonesia
+    },
+    createAvatar(row) {
+      const avatar =
+        'file' in row
+          ? URL.createObjectURL(row.file)
+          : new URL('/assets/images/user-1.jpg', import.meta.url).href
+
+      return avatar
     }
   }
 })

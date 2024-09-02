@@ -66,9 +66,16 @@ loadScriptsSequentially()
 </template>
 
 <style>
-table th,
+table th {
+  text-align: center;
+}
+
 table td {
   vertical-align: middle;
-  text-wrap: nowrap;
+  text-wrap: balance;
+  text-align: center;
+}
+table td * {
+  margin: 10px !important;
 }
 </style>

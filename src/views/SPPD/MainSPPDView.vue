@@ -65,7 +65,6 @@ const loading = ref(true)
 onMounted(async () => {
   SPPDList.value = await idbStore.fetchData(objectStore)
   loading.value = !loading.value
-  adjustHeight()
 })
 
 const validateForm = () => {
@@ -161,15 +160,6 @@ const handleDelete = async (id) => {
   }
 }
 
-// Fungsi untuk mengatur tinggi textarea secara otomatis
-const adjustHeight = () => {
-  const textarea = document.getElementById('uraian')
-  if (textarea) {
-    textarea.style.height = 'auto'
-    textarea.style.height = `${textarea.scrollHeight}px`
-  }
-}
-
 // Menentukan tanggal minimal untuk tanggal pulang
 const handleTglBerangkatChange = () => {
   if (dataSPPD.value.tglBerangkat) {
@@ -255,7 +245,7 @@ const minTglPulang = ref('')
             <td v-text="st.lamaPenugasan + ' Hari'"></td>
 
             <td class="text-center">
-              <button class="btn-danger btn me-2 btn-sm" @click="handleDelete(st.id)">Hapus</button>
+              <button class="btn-danger btn btn-sm" @click="handleDelete(st.id)">Hapus</button>
               <button
                 data-bs-toggle="modal"
                 data-bs-target="#staticBackdrop"

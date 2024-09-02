@@ -4,7 +4,7 @@ export const Toast = Swal.mixin({
   toast: true,
   position: 'top-end',
   showConfirmButton: false,
-  timer: 5000,
+  timer: 2000,
   showCloseButton: true,
   timerProgressBar: true,
   didOpen: (toast) => {

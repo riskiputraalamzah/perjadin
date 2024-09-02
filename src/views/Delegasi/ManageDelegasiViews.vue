@@ -249,9 +249,9 @@ const handleConfirm = async () => {
 
       // Update data di IndexedDB
       await idbStore.updateData('delegasiPegawai', 'id', idDelegasi, storeRawData)
-      await getDataDelegasi()
+
       resetData()
-      if (currentDelegasi.value.relation.length) {
+      if (currentDelegasi.value.relation.length > 0) {
         Swal.fire({
           icon: 'success',
           title: `Data Berhasil Ditambahkan`,
@@ -265,6 +265,7 @@ const handleConfirm = async () => {
           html: `NO ST <b>${route.params.noST}</b> telah berhasil di Aktifkan`
         })
       }
+      await getDataDelegasi()
     }
   } catch (error) {
     console.error('Terjadi kesalahan:', error)
@@ -399,14 +400,20 @@ const handleDeleteRelation = async (indexRelation) => {
   try {
     // Pastikan relation ada dan index valid sebelum menghapus
     if (currentDelegasi.value.relation) {
-      console.log('Data sebelum penghapusan:', currentDelegasi.value)
-
+      const confirmResult = await Swal.fire({
+        title: 'Apakah Anda Yakin',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya',
+        cancelButtonText: 'Tidak',
+        cancelButtonColor: 'red',
+        backdrop: true,
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      })
+      if (!confirmResult.isConfirmed) return
       // Hapus data dari key relation berdasarkan index
       currentDelegasi.value.relation.splice(indexRelation, 1)
-
-      // Jika setelah dihapus, relation kosong, hapus key relation
-
-      console.log('Data setelah penghapusan:', currentDelegasi.value)
 
       // Update data di IndexedDB
       const updatedData = await idbStore.updateData(

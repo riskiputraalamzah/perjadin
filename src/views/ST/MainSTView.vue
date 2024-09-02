@@ -207,7 +207,7 @@ const formatDate = (dateString) => {
             <td v-text="st.uraian"></td>
 
             <td class="text-center">
-              <button class="btn-danger btn me-2 btn-sm" @click="handleDelete(st.id)">Hapus</button>
+              <button class="btn-danger btn btn-sm" @click="handleDelete(st.id)">Hapus</button>
               <button
                 data-bs-toggle="modal"
                 data-bs-target="#staticBackdrop"

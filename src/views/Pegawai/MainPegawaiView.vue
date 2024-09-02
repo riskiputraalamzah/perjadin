@@ -186,9 +186,7 @@ const modalProps = ref({
             <td v-text="pegawai.golongan"></td>
             <td v-text="pegawai.jabatan"></td>
             <td class="text-center">
-              <button class="btn-danger btn me-2 btn-sm" @click="handleDelete(pegawai.id)">
-                Hapus
-              </button>
+              <button class="btn-danger btn btn-sm" @click="handleDelete(pegawai.id)">Hapus</button>
               <button
                 data-bs-toggle="modal"
                 data-bs-target="#staticBackdrop"

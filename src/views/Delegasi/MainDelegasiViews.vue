@@ -166,6 +166,8 @@ const modalProps = ref({
   actionType: 'add',
   data: {}
 })
+
+const encode = (value) => btoa(value)
 </script>
 <template>
   <div>
@@ -197,7 +199,7 @@ const modalProps = ref({
             <td>
               <div v-if="dlg.relation?.length">
                 <span
-                  :class="[`text-bg-dark py-2`, 'badge fs-1 me-2']"
+                  :class="[`text-bg-dark py-2`, 'badge fs-1 ']"
                   v-for="(sppd, i) in dlg.relation"
                   :key="i"
                   >{{ sppd.noSPPD.noSPPD }}</span
@@ -212,32 +214,29 @@ const modalProps = ref({
               <span v-else>Kosong</span>
             </td>
             <td class="text-center">
-              <button v-if="dlg.relation.length" class="btn btn-primary">Aktif</button>
+              <button v-if="dlg.relation?.length" class="btn btn-primary">Aktif</button>
               <button v-else class="btn btn-danger">Non Aktif</button>
             </td>
             <td class="text-center">
-              <button
-                @click="manageData(dlg.id, dlg.noST.noST)"
-                class="btn-success btn me-2 btn-sm"
-              >
+              <button @click="manageData(dlg.id, dlg.noST.noST)" class="btn-success btn btn-sm">
                 Manage Data
               </button>
-              <button
-                class="btn-danger btn me-2 btn-sm"
-                @click="handleDelete(dlg.id, dlg.noST.noST)"
-              >
+              <button class="btn-danger btn btn-sm" @click="handleDelete(dlg.id, dlg.noST.noST)">
                 Hapus
               </button>
               <button
                 data-bs-toggle="modal"
                 data-bs-target="#staticBackdrop"
                 @click="openEditModal(dlg.id, dlg.noST)"
-                class="btn-sm btn-warning me-2 btn"
+                class="btn-sm btn-warning btn"
               >
                 Edit
               </button>
               <router-link
-                :to="{ name: 'detailDelegasi', params: { noST: dlg.noST.noST } }"
+                :to="{
+                  name: 'detailDelegasi',
+                  params: { noST: encode(`${dlg.noST.noST}___${dlg.id}`) }
+                }"
                 class="btn-sm btn-info btn"
                 >Detail</router-link
               >

@@ -40,9 +40,7 @@ const isActive = (path) => {
             </router-link>
             <router-link
               to="/profile"
-              class="sidebar-link"
-              exact-active-class="active"
-              active-class="active"
+              :class="['sidebar-link', isActive('/profile') ? 'active' : '']"
             >
               <span>
                 <i class="ti ti-user"></i>
