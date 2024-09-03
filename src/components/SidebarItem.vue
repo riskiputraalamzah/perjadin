@@ -47,7 +47,7 @@ const isActive = (path) => {
               </span>
               <span class="hide-menu">My Profile</span>
             </router-link>
-            <router-link
+            <!-- <router-link
               to="/init-db"
               class="sidebar-link"
               exact-active-class="active"
@@ -57,7 +57,7 @@ const isActive = (path) => {
                 <i class="ti ti-file-upload"></i>
               </span>
               <span class="hide-menu">Inisiasi Data</span>
-            </router-link>
+            </router-link> -->
           </li>
           <li class="nav-small-cap">
             <i class="ti ti-dots nav-small-cap-icon fs-4"></i>

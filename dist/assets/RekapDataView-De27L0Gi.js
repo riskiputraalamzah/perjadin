@@ -1,0 +1,1 @@
+import{_ as e}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c as t,o as a,a as o}from"./index-CDSjVgLj.js";const c={},s=o("h1",{class:"text-dark fw-bold mb-4"},"Rekap Data",-1),r=[s];function n(_,d){return a(),t("div",null,r)}const l=e(c,[["render",n]]);export{l as default};

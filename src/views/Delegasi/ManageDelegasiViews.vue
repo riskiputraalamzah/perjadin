@@ -251,7 +251,7 @@ const handleConfirm = async () => {
       await idbStore.updateData('delegasiPegawai', 'id', idDelegasi, storeRawData)
 
       resetData()
-      if (currentDelegasi.value.relation.length > 0) {
+      if (currentDelegasi.value.relation?.length > 0) {
         Swal.fire({
           icon: 'success',
           title: `Data Berhasil Ditambahkan`,
