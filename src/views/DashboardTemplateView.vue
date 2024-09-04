@@ -72,7 +72,7 @@ table th {
 
 table td {
   vertical-align: middle;
-  text-wrap: balance;
+  text-wrap: nowrap;
   text-align: center;
 }
 table td * {

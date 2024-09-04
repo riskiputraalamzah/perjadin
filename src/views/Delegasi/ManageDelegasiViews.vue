@@ -361,9 +361,8 @@ function calculateAndFormat(amount, rate, days) {
 // Computed properties for each calculation
 const sumTransport = computed(() => {
   const totalPrice =
-    expenseDetails.value.pricePP +
-    expenseDetails.value.priceDeparture +
-    expenseDetails.value.priceReturn
+    // expenseDetails.value.pricePP +
+    expenseDetails.value.priceDeparture + expenseDetails.value.priceReturn
   return proxy.formatRupiah(totalPrice)
 })
 

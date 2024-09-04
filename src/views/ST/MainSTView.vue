@@ -204,7 +204,7 @@ const formatDate = (dateString) => {
           <tr v-for="(st, key) in suratTugasList" :key="key">
             <td v-text="st.noST"></td>
             <td v-text="formatDate(st.tgl)"></td>
-            <td v-text="st.uraian"></td>
+            <td v-text="st.uraian" style="text-wrap: wrap; text-align: left"></td>
 
             <td class="text-center">
               <button class="btn-danger btn btn-sm" @click="handleDelete(st.id)">Hapus</button>
