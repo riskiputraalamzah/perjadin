@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "clean": "rimraf dist",
@@ -15,9 +18,12 @@
     "2": "^3.0.0",
     "apexcharts": "^3.53.0",
     "axios": "^1.7.4",
+    "html2canvas": "^1.4.1",
     "idb": "^8.0.0",
+    "jspdf": "^2.5.1",
+    "pdfjs-dist": "^4.6.82",
     "pinia": "^2.1.7",
-    "sweetalert2": "^11.12.4",
+    "sweetalert2": "^11.6.13",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3",
     "vue3-apexcharts": "^1.6.0",
