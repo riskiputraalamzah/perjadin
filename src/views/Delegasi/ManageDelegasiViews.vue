@@ -204,102 +204,99 @@ const handleConfirm = async () => {
     if (!confirmResult.isConfirmed) return
 
     // SweetAlert untuk input dana
-    const totalSemuaDana = await promptTotalDana()
 
-    if (totalSemuaDana) {
-      const originalValue = proxy.unformatRupiah(totalSemuaDana)
-      updateExpenseDetails()
+    const originalValue = proxy.unformatRupiah(totalBiayaSeluruhnya.value)
+    updateExpenseDetails()
 
-      // Gabungkan data secara efisien dengan spread operator
-      const data = {
-        totalSemuaDana: originalValue,
-        ...expenseDetails.value
-      }
-
-      let rawData = {
-        ...data,
-        noSPPD: toRaw(selectedSPPD.value) ?? { noSPPD: '' },
-        pegawai: toRaw(selectedPegawai.value)
-      }
-
-      // SweetAlert untuk input tambahan
-      const additionalData = await promptAdditionalInfo()
-
-      if (additionalData) {
-        rawData = { ...rawData, ...additionalData }
-      }
-
-      // Ambil data delegasiPegawai untuk memeriksa apakah relation sudah ada
-
-      let storeRawData = {}
-
-      if (currentDelegasi.value && currentDelegasi.value.relation) {
-        // Jika relation sudah ada, tambahkan rawData ke relation yang ada
-        storeRawData = {
-          ...toRaw(currentDelegasi.value),
-          relation: [...toRaw(currentDelegasi.value.relation), rawData]
-        }
-      } else {
-        // Jika relation belum ada, buat relation baru dengan rawData
-        storeRawData = { relation: [rawData] }
-      }
-
-      // Log hasil gabungan data
-      console.log({ storeRawData })
-
-      // Update data di IndexedDB
-      await idbStore.updateData('delegasiPegawai', 'id', idDelegasi, storeRawData)
-
-      resetData()
-      if (currentDelegasi.value.relation?.length > 0) {
-        Swal.fire({
-          icon: 'success',
-          title: `Data Berhasil Ditambahkan`,
-          html: `NO ST <b>${route.params.noST}</b> telah berhasil ditambahkan Data Delegasinya`
-        })
-        tambahDataST.value = !tambahDataST.value
-      } else {
-        Swal.fire({
-          icon: 'success',
-          title: `Delegasi Tugas telah Aktif`,
-          html: `NO ST <b>${route.params.noST}</b> telah berhasil di Aktifkan`
-        })
-      }
-      await getDataDelegasi()
+    // Gabungkan data secara efisien dengan spread operator
+    const data = {
+      totalSemuaDana: originalValue,
+      ...expenseDetails.value
     }
+
+    let rawData = {
+      ...data,
+      noSPPD: toRaw(selectedSPPD.value) ?? { noSPPD: '' },
+      pegawai: toRaw(selectedPegawai.value)
+    }
+
+    // SweetAlert untuk input tambahan
+    const additionalData = await promptAdditionalInfo()
+
+    if (additionalData) {
+      rawData = { ...rawData, ...additionalData }
+    }
+
+    // Ambil data delegasiPegawai untuk memeriksa apakah relation sudah ada
+
+    let storeRawData = {}
+
+    if (currentDelegasi.value && currentDelegasi.value.relation) {
+      // Jika relation sudah ada, tambahkan rawData ke relation yang ada
+      storeRawData = {
+        ...toRaw(currentDelegasi.value),
+        relation: [...toRaw(currentDelegasi.value.relation), rawData]
+      }
+    } else {
+      // Jika relation belum ada, buat relation baru dengan rawData
+      storeRawData = { relation: [rawData] }
+    }
+
+    // Log hasil gabungan data
+    console.log({ storeRawData })
+
+    // Update data di IndexedDB
+    await idbStore.updateData('delegasiPegawai', 'id', idDelegasi, storeRawData)
+
+    resetData()
+    if (currentDelegasi.value.relation?.length > 0) {
+      Swal.fire({
+        icon: 'success',
+        title: `Data Berhasil Ditambahkan`,
+        html: `NO ST <b>${route.params.noST}</b> telah berhasil ditambahkan Data Delegasinya`
+      })
+      tambahDataST.value = !tambahDataST.value
+    } else {
+      Swal.fire({
+        icon: 'success',
+        title: `Delegasi Tugas telah Aktif`,
+        html: `NO ST <b>${route.params.noST}</b> telah berhasil di Aktifkan`
+      })
+    }
+    await getDataDelegasi()
   } catch (error) {
     console.error('Terjadi kesalahan:', error)
   }
 }
 
 // Fungsi untuk prompt total dana
-const promptTotalDana = async () => {
-  const { value: totalSemuaDana } = await Swal.fire({
-    title: 'Total Dana Yang Diterima',
-    input: 'text',
-    inputValue: proxy.formatRupiah(0),
-    inputValidator: (value) => {
-      if (!value) return 'Input tidak boleh kosong'
-      if (isNaN(proxy.unformatRupiah(value))) return 'Input harus berupa angka'
-    },
-    showCancelButton: true,
-    confirmButtonText: 'Lanjut',
-    cancelButtonText: 'Batal',
-    cancelButtonColor: 'red',
-    backdrop: true,
-    allowOutsideClick: false,
-    allowEscapeKey: false,
-    didOpen: () => {
-      const input = Swal.getInput()
-      input.addEventListener('input', (event) => {
-        const cleanedValue = event.target.value.replace(/[^0-9,]/g, '')
-        event.target.value = proxy.formatRupiah(proxy.unformatRupiah(cleanedValue))
-      })
-    }
-  })
+// const promptTotalDana = async () => {
+//   const { value: totalSemuaDana } = await Swal.fire({
+//     title: 'Total Dana Yang Diterima',
+//     input: 'text',
+//     inputValue: proxy.formatRupiah(0),
+//     inputValidator: (value) => {
+//       if (!value) return 'Input tidak boleh kosong'
+//       if (isNaN(proxy.unformatRupiah(value))) return 'Input harus berupa angka'
+//     },
+//     showCancelButton: true,
+//     confirmButtonText: 'Lanjut',
+//     cancelButtonText: 'Batal',
+//     cancelButtonColor: 'red',
+//     backdrop: true,
+//     allowOutsideClick: false,
+//     allowEscapeKey: false,
+//     didOpen: () => {
+//       const input = Swal.getInput()
+//       input.addEventListener('input', (event) => {
+//         const cleanedValue = event.target.value.replace(/[^0-9,]/g, '')
+//         event.target.value = proxy.formatRupiah(proxy.unformatRupiah(cleanedValue))
+//       })
+//     }
+//   })
 
-  return totalSemuaDana
-}
+//   return totalSemuaDana
+// }
 
 // Fungsi untuk prompt informasi tambahan
 const promptAdditionalInfo = async () => {
@@ -433,6 +430,33 @@ const handleDeleteRelation = async (indexRelation) => {
     console.error('Terjadi kesalahan saat menghapus data:', error)
   }
 }
+
+const include = ref({
+  PP: false,
+  transport: true,
+  accommodation: true,
+  daily: true,
+  otherExpenses: false
+})
+const totalBiayaSeluruhnya = computed(() => {
+  let total = 0
+  if (include.value.PP) {
+    total += expenseDetails.value.pricePP
+  }
+  if (include.value.transport) {
+    total += proxy.unformatRupiah(sumTransport.value)
+  }
+  if (include.value.accommodation) {
+    total += proxy.unformatRupiah(sumTotalAccommodation.value)
+  }
+  if (include.value.daily) {
+    total += proxy.unformatRupiah(sumTotalDaily.value)
+  }
+  if (include.value.otherExpenses) {
+    total += expenseDetails.value.biayaLainnyaJumlah
+  }
+  return proxy.formatRupiah(total)
+})
 </script>
 
 <template>
@@ -812,6 +836,125 @@ const handleDeleteRelation = async (indexRelation) => {
                   id="dailyNumDays"
                   placeholder="Masukkan jumlah hari"
                 />
+              </div>
+            </div>
+          </div>
+
+          <!-- sum total biaya seluruhnya -->
+          <div class="card mb-3">
+            <h4 class="card-header text-dark">Total Biaya Seluruhnya</h4>
+            <div class="card-body">
+              <!-- Harga PP -->
+              <div class="row align-items-center g-0 py-3 border-bottom">
+                <div class="col-sm-1">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    v-model="include.PP"
+                    id="includePP"
+                  />
+                </div>
+                <div class="col-sm-6">
+                  <label for="includePP">
+                    <strong class="mb-2">Harga PP</strong>
+                  </label>
+                </div>
+                <div class="col-sm-5 text-sm-end">
+                  {{ formatRupiah(expenseDetails.pricePP) }}
+                </div>
+              </div>
+
+              <!-- Jumlah Uang Transport -->
+              <div class="row align-items-center g-0 py-3 border-bottom">
+                <div class="col-sm-1">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    v-model="include.transport"
+                    id="includeTransport"
+                    checked
+                  />
+                </div>
+                <div class="col-sm-6">
+                  <label for="includeTransport">
+                    <strong class="mb-2">Jumlah Uang Transport</strong>
+                  </label>
+                </div>
+                <div class="col-sm-5 text-sm-end">
+                  {{ sumTransport }}
+                </div>
+              </div>
+
+              <!-- Jumlah Harga Penginapan -->
+              <div class="row align-items-center g-0 py-3 border-bottom">
+                <div class="col-sm-1">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    v-model="include.accommodation"
+                    id="includeAccommodation"
+                    checked
+                  />
+                </div>
+                <div class="col-sm-6">
+                  <label for="includeAccommodation">
+                    <strong class="mb-2">Jumlah Harga Penginapan</strong>
+                  </label>
+                </div>
+                <div class="col-sm-5 text-sm-end">
+                  {{ sumTotalAccommodation }}
+                </div>
+              </div>
+
+              <!-- Total Uang Harian -->
+              <div class="row align-items-center g-0 py-3 border-bottom">
+                <div class="col-sm-1">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    v-model="include.daily"
+                    id="includeDaily"
+                    checked
+                  />
+                </div>
+                <div class="col-sm-6">
+                  <label for="includeDaily">
+                    <strong class="mb-2">Total Uang Harian</strong>
+                  </label>
+                </div>
+                <div class="col-sm-5 text-sm-end">
+                  {{ sumTotalDaily }}
+                </div>
+              </div>
+
+              <!-- Biaya Lainnya (bila ada) -->
+              <div class="row align-items-center g-0 py-3 border-bottom">
+                <div class="col-sm-1">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    v-model="include.otherExpenses"
+                    id="includeOtherExpenses"
+                  />
+                </div>
+                <div class="col-sm-6">
+                  <label for="includeOtherExpenses">
+                    <strong class="mb-2">Jumlah Biaya Lainnya</strong>
+                  </label>
+                </div>
+                <div class="col-sm-5 text-sm-end">
+                  {{ formatRupiah(expenseDetails.biayaLainnyaJumlah) }}
+                </div>
+              </div>
+
+              <!-- Total Keseluruhan -->
+              <div class="row align-items-center fw-bold text-dark g-0 py-3 border-top">
+                <div class="col-sm-6">
+                  <strong class="mb-2">Total Biaya Seluruhnya</strong>
+                </div>
+                <div class="col-sm-6 text-sm-end">
+                  {{ totalBiayaSeluruhnya }}
+                </div>
               </div>
             </div>
           </div>

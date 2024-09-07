@@ -284,13 +284,7 @@ const minTglPulang = ref('')
           </div>
           <div class="mb-3">
             <label for="tgl" class="form-label">Tanggal SPPD</label>
-            <input
-              v-model="dataSPPD.tgl"
-              type="date"
-              :min="minDate"
-              class="form-control"
-              id="tgl"
-            />
+            <input v-model="dataSPPD.tgl" type="date" class="form-control" id="tgl" />
           </div>
           <div class="mb-3">
             <label for="uraian" class="form-label">Tujuan</label>
@@ -301,7 +295,6 @@ const minTglPulang = ref('')
             <input
               v-model="dataSPPD.tglBerangkat"
               type="date"
-              :min="minDate"
               class="form-control"
               id="tglBerangkat"
               @change="handleTglBerangkatChange"

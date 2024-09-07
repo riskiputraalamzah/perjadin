@@ -152,15 +152,15 @@ const handleDragScroll = (e) => {
               </li>
               <li class="list-group-item">
                 <p class="fw-bold text-dark me-3">Harga Tiket Berangkat</p>
-                <p>{{ formatRupiah(dlg.princeDeparture) }}</p>
+                <p>{{ formatRupiah(dlg.priceDeparture) }}</p>
               </li>
               <li class="list-group-item">
                 <p class="fw-bold text-dark me-3">Harga Tiket Pulang</p>
-                <p>{{ formatRupiah(dlg.princeReturn) }}</p>
+                <p>{{ formatRupiah(dlg.priceReturn) }}</p>
               </li>
               <li class="list-group-item">
                 <p class="fw-bold text-dark me-3">Jumlah Uang Transport</p>
-                <p>{{ formatRupiah(dlg.sumTransport) }}</p>
+                <p>{{ formatRupiah(dlg.totalPrice) }}</p>
               </li>
               <li class="list-group-item">
                 <p class="fw-bold text-dark me-3">Tarif Satuan Penginapan</p>
@@ -168,11 +168,11 @@ const handleDragScroll = (e) => {
               </li>
               <li class="list-group-item">
                 <p class="fw-bold text-dark me-3">Jumlah Hari/Malam</p>
-                <p>{{ formatRupiah(dlg.numDays) }} Hari</p>
+                <p>{{ dlg.numDays }} Hari</p>
               </li>
               <li class="list-group-item">
                 <p class="fw-bold text-dark me-3">Jumlah Harga Penginapan</p>
-                <p>{{ formatRupiah(dlg.sumTotalAccomodation) }}</p>
+                <p>{{ formatRupiah(dlg.totalAccommodation) }}</p>
               </li>
               <li class="list-group-item">
                 <p class="fw-bold text-dark me-3">Uang Harian</p>
@@ -184,11 +184,11 @@ const handleDragScroll = (e) => {
               </li>
               <li class="list-group-item">
                 <p class="fw-bold text-dark me-3">Total Uang Harian</p>
-                <p>{{ formatRupiah(dlg.sumTotalDaily) }}</p>
+                <p>{{ formatRupiah(dlg.totalDaily) }}</p>
               </li>
               <li class="list-group-item">
                 <p class="fw-bold text-dark me-3">Biaya Lainnya</p>
-                <p>{{ formatRupiah(dlg.biayaLainnyaKeterangan) }}</p>
+                <p>{{ dlg.biayaLainnyaKeterangan }}</p>
               </li>
               <li class="list-group-item">
                 <p class="fw-bold text-dark me-3">Jumlah Biaya Lainnya</p>

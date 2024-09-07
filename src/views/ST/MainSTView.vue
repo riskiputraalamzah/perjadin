@@ -246,13 +246,7 @@ const formatDate = (dateString) => {
           </div>
           <div class="mb-3">
             <label for="tgl" class="form-label">Tanggal Surat Tugas</label>
-            <input
-              v-model="dataSuratTugas.tgl"
-              type="date"
-              :min="minDate"
-              class="form-control"
-              id="tgl"
-            />
+            <input v-model="dataSuratTugas.tgl" type="date" class="form-control" id="tgl" />
           </div>
           <div class="mb-3">
             <label for="uraian" class="form-label">Uraian</label>
