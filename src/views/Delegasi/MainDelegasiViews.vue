@@ -196,7 +196,7 @@ const encode = (value) => btoa(value)
         <tbody v-if="delegasiPegawai.length > 0">
           <tr v-for="(dlg, key) in delegasiPegawai" :key="key">
             <td v-text="dlg.noST.noST"></td>
-            <td>
+            <td style="text-wrap: wrap">
               <div v-if="dlg.relation?.length">
                 <span
                   :class="[`text-bg-dark py-2`, 'badge fs-1 ']"
@@ -209,7 +209,7 @@ const encode = (value) => btoa(value)
             </td>
             <td>
               <span v-if="dlg.relation?.length">
-                {{ dlg.relation?.length + ' Orang' }}
+                <span class="me-2"> {{ dlg.relation?.length }}</span> orang
               </span>
               <span v-else>Kosong</span>
             </td>

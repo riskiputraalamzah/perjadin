@@ -5,11 +5,18 @@ import App from './App.vue'
 import router from './router'
 import VueApexCharts from 'vue3-apexcharts'
 
+import { createI18n } from 'vue-i18n'
+
+const i18n = createI18n({
+  locale: 'en-GB' // Locale yang menggunakan format dd/mm/yyyy
+})
+
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
 app.use(VueApexCharts)
+app.use(i18n)
 app.mixin({
   methods: {
     formatRupiah(value) {
