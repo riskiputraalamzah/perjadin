@@ -157,11 +157,11 @@ const adjustHeight = () => {
 }
 
 // Mengambil tanggal hari ini dalam format YYYY-MM-DD
-const today = new Date()
-const year = today.getFullYear()
-const month = String(today.getMonth() + 1).padStart(2, '0') // Menambah 0 jika kurang dari 10
-const day = String(today.getDate()).padStart(2, '0') // Menambah 0 jika kurang dari 10
-const minDate = ref(`${year}-${month}-${day}`) // Format: YYYY-MM-DD
+// const today = new Date()
+// const year = today.getFullYear()
+// const month = String(today.getMonth() + 1).padStart(2, '0') // Menambah 0 jika kurang dari 10
+// const day = String(today.getDate()).padStart(2, '0') // Menambah 0 jika kurang dari 10
+// const minDate = ref(`${year}-${month}-${day}`) // Format: YYYY-MM-DD
 
 // Fungsi untuk memformat tanggal ke format Day Month Year
 const formatDate = (dateString) => {
