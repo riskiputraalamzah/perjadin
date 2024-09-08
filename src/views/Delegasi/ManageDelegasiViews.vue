@@ -4,8 +4,8 @@ import { useIDBStore } from '@/stores/IDB'
 import Swal from 'sweetalert2'
 import { Toast } from '@/components/ToastAlert'
 import { useRouter, useRoute } from 'vue-router'
-import { getCurrentInstance } from 'vue'
 import { useMainStore } from '@/stores/main'
+import { getCurrentInstance } from 'vue'
 
 const { proxy } = getCurrentInstance()
 
@@ -57,21 +57,9 @@ onMounted(async () => {
 const searchSPPD = ref('')
 const searchPegawai = ref('')
 
-// Selected data
-// const selectedST = ref(null)
 const selectedSPPD = ref(null)
 const selectedPegawai = ref(null)
-// const selectedSPPD = ref([])
-// const selectedPegawai = ref([])
 
-// Computed properties for filtered lists with conditions
-// const filteredST = computed(() => {
-//   return STData.value.length
-//     ? STData.value
-//         .filter((st) => !delegasiPegawai.value.some((used) => used.noST.noST === st.noST))
-//         .filter((st) => st.noST.toLowerCase().includes(searchST.value.toLowerCase()))
-//     : []
-// })
 const resetData = () => {
   selectedSPPD.value = null
   selectedPegawai.value = null
@@ -127,34 +115,12 @@ const filteredPegawai = computed(() => {
     )
 })
 
-// Selection methods
-// const selectST = (st) => {
-//   selectedST.value = st
-// }
 const selectSPPD = (st) => {
   selectedSPPD.value = st
 }
 const selectPegawai = (st) => {
   selectedPegawai.value = st
 }
-
-// const toggleSPPDSelection = (sppd) => {
-//   const index = selectedSPPD.value.indexOf(sppd)
-//   if (index > -1) {
-//     selectedSPPD.value.splice(index, 1)
-//   } else {
-//     selectedSPPD.value.push(sppd)
-//   }
-// }
-
-// const togglePegawaiSelection = (pegawai) => {
-//   const index = selectedPegawai.value.indexOf(pegawai)
-//   if (index > -1) {
-//     selectedPegawai.value.splice(index, 1)
-//   } else {
-//     selectedPegawai.value.push(pegawai)
-//   }
-// }
 
 // Consolidate accommodation and travel details into one object
 const expenseDetails = ref({
@@ -163,18 +129,18 @@ const expenseDetails = ref({
   transportationType: '',
   bookingCode: '',
   seatNumber: '',
-  pricePP: 0,
-  priceDeparture: 0,
-  priceReturn: 0,
-  totalPrice: 0,
-  rate: 0,
-  numDays: 0,
-  totalAccommodation: 0,
-  dailyRate: 0,
-  dailyNumDays: 0,
-  totalDaily: 0,
+  pricePP: '',
+  priceDeparture: '',
+  priceReturn: '',
+  totalPrice: '',
+  rate: '',
+  numDays: '',
+  totalAccommodation: '',
+  dailyRate: '',
+  dailyNumDays: '',
+  totalDaily: '',
   biayaLainnyaKeterangan: '',
-  biayaLainnyaJumlah: 0
+  biayaLainnyaJumlah: ''
 })
 
 const autoResizeTextarea = ref(null) // Referensi ke textarea
@@ -268,35 +234,6 @@ const handleConfirm = async () => {
     console.error('Terjadi kesalahan:', error)
   }
 }
-
-// Fungsi untuk prompt total dana
-// const promptTotalDana = async () => {
-//   const { value: totalSemuaDana } = await Swal.fire({
-//     title: 'Total Dana Yang Diterima',
-//     input: 'text',
-//     inputValue: proxy.formatRupiah(0),
-//     inputValidator: (value) => {
-//       if (!value) return 'Input tidak boleh kosong'
-//       if (isNaN(proxy.unformatRupiah(value))) return 'Input harus berupa angka'
-//     },
-//     showCancelButton: true,
-//     confirmButtonText: 'Lanjut',
-//     cancelButtonText: 'Batal',
-//     cancelButtonColor: 'red',
-//     backdrop: true,
-//     allowOutsideClick: false,
-//     allowEscapeKey: false,
-//     didOpen: () => {
-//       const input = Swal.getInput()
-//       input.addEventListener('input', (event) => {
-//         const cleanedValue = event.target.value.replace(/[^0-9,]/g, '')
-//         event.target.value = proxy.formatRupiah(proxy.unformatRupiah(cleanedValue))
-//       })
-//     }
-//   })
-
-//   return totalSemuaDana
-// }
 
 // Fungsi untuk prompt informasi tambahan
 const promptAdditionalInfo = async () => {
@@ -456,6 +393,66 @@ const totalBiayaSeluruhnya = computed(() => {
     total += expenseDetails.value.biayaLainnyaJumlah
   }
   return proxy.formatRupiah(total)
+})
+
+const formatRupiah = (value) => {
+  if (!value) return ''
+  const formatted = value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  return `Rp ${formatted}`
+}
+const unformatRupiah = (value) => {
+  if (!value) return ''
+  return parseInt(value.replace(/[^0-9]/g, ''), 10)
+}
+// Computed property with getter and setter
+
+const formattedPricePP = computed({
+  get() {
+    return formatRupiah(expenseDetails.value.pricePP)
+  },
+  set(newValue) {
+    expenseDetails.value.pricePP = unformatRupiah(newValue)
+  }
+})
+const formattedpriceDeparture = computed({
+  get() {
+    return formatRupiah(expenseDetails.value.priceDeparture)
+  },
+  set(newValue) {
+    expenseDetails.value.priceDeparture = unformatRupiah(newValue)
+  }
+})
+const formattedpriceReturn = computed({
+  get() {
+    return formatRupiah(expenseDetails.value.priceReturn)
+  },
+  set(newValue) {
+    expenseDetails.value.priceReturn = unformatRupiah(newValue)
+  }
+})
+const formattedrate = computed({
+  get() {
+    return formatRupiah(expenseDetails.value.rate)
+  },
+  set(newValue) {
+    expenseDetails.value.rate = unformatRupiah(newValue)
+  }
+})
+const formatteddailyRate = computed({
+  get() {
+    return formatRupiah(expenseDetails.value.dailyRate)
+  },
+  set(newValue) {
+    expenseDetails.value.dailyRate = unformatRupiah(newValue)
+  }
+})
+const formattedbiayaLainnyaJumlah = computed({
+  get() {
+    return formatRupiah(expenseDetails.value.biayaLainnyaJumlah)
+  },
+  set(newValue) {
+    expenseDetails.value.biayaLainnyaJumlah = unformatRupiah(newValue)
+  }
 })
 </script>
 
@@ -695,8 +692,9 @@ const totalBiayaSeluruhnya = computed(() => {
               <div class="mb-3">
                 <label for="pricePP" class="form-label">Harga PP</label>
                 <input
-                  v-model="expenseDetails.pricePP"
-                  type="number"
+                  v-model="formattedPricePP"
+                  @input="validateNumberInput"
+                  type="text"
                   class="form-control"
                   id="pricePP"
                   placeholder="Masukkan harga PP"
@@ -705,8 +703,9 @@ const totalBiayaSeluruhnya = computed(() => {
               <div class="mb-3">
                 <label for="priceDeparture" class="form-label">Harga Tiket Berangkat</label>
                 <input
-                  v-model="expenseDetails.priceDeparture"
-                  type="number"
+                  v-model="formattedpriceDeparture"
+                  type="text"
+                  @input="validateNumberInput"
                   class="form-control"
                   id="priceDeparture"
                   placeholder="Masukkan harga tiket berangkat"
@@ -715,8 +714,9 @@ const totalBiayaSeluruhnya = computed(() => {
               <div class="mb-3">
                 <label for="priceReturn" class="form-label">Harga Tiket Pulang</label>
                 <input
-                  v-model="expenseDetails.priceReturn"
-                  type="number"
+                  v-model="formattedpriceReturn"
+                  type="text"
+                  @input="validateNumberInput"
                   class="form-control"
                   id="priceReturn"
                   placeholder="Masukkan harga tiket pulang"
@@ -742,8 +742,9 @@ const totalBiayaSeluruhnya = computed(() => {
               <div class="mb-3">
                 <label for="rate" class="form-label">Tarif Satuan Penginapan</label>
                 <input
-                  v-model="expenseDetails.rate"
-                  type="number"
+                  v-model="formattedrate"
+                  type="text"
+                  @input="validateNumberInput"
                   class="form-control"
                   id="rate"
                   placeholder="Masukkan tarif satuan penginapan"
@@ -780,8 +781,9 @@ const totalBiayaSeluruhnya = computed(() => {
               <div class="mb-3">
                 <label for="dailyRate" class="form-label">Satuan Uang Harian (Rp)</label>
                 <input
-                  v-model="expenseDetails.dailyRate"
-                  type="number"
+                  v-model="formatteddailyRate"
+                  type="text"
+                  @input="validateNumberInput"
                   class="form-control"
                   id="dailyRate"
                   placeholder="Masukkan satuan uang harian"
@@ -830,11 +832,12 @@ const totalBiayaSeluruhnya = computed(() => {
               <div class="mb-3">
                 <label for="dailyNumDays" class="form-label">Jumlah</label>
                 <input
-                  v-model="expenseDetails.biayaLainnyaJumlah"
-                  type="number"
+                  v-model="formattedbiayaLainnyaJumlah"
+                  type="text"
+                  @input="validateNumberInput"
                   class="form-control"
                   id="dailyNumDays"
-                  placeholder="Masukkan jumlah hari"
+                  placeholder="Masukkan jumlah Biaya"
                 />
               </div>
             </div>

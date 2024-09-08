@@ -42,6 +42,18 @@ const router = createRouter({
       component: () => import('../views/ST/MainSTView.vue')
     },
     {
+      path: '/spm',
+      name: 'spm',
+      meta: { mustLogin: true },
+      component: () => import('../views/MainSPMView.vue')
+    },
+    {
+      path: '/sp2d',
+      name: 'sp2d',
+      meta: { mustLogin: true },
+      component: () => import('../views/MainSP2DView.vue')
+    },
+    {
       path: '/surat-perintah-perjalanan-dinas',
       name: 'sppd',
       meta: { mustLogin: true },

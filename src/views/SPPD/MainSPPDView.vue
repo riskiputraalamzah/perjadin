@@ -204,13 +204,13 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('id-ID', options) // 'id-ID' untuk format Indonesia
 }
 
-const minDate = new Date().toISOString().split('T')[0]
+// const minDate = new Date().toISOString().split('T')[0]
 const minTglPulang = ref('')
 </script>
 
 <template>
   <div>
-    <h1 class="text-dark fw-bold mb-4">List SPPD</h1>
+    <h1 class="text-dark fw-bold mb-4">List Surat Perintah Perjalanan Dinas</h1>
 
     <!-- Tombol untuk membuka modal -->
     <button

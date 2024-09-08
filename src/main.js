@@ -43,6 +43,27 @@ app.mixin({
           : new URL('/assets/images/user-1.jpg', import.meta.url).href
 
       return avatar
+    },
+    validateNumberInput(event) {
+      let value = event.target.value
+
+      // Menghapus semua karakter kecuali angka, koma, dan titik
+      value = value.replace(/[^0-9.,]/g, '')
+
+      // Menghapus koma sebagai desimal jika ada lebih dari satu
+      const [integerPart, decimalPart] = value.split(',')
+      if (decimalPart) {
+        // Membatasi hanya satu koma (desimal) yang diperbolehkan
+        value = `${integerPart.replace(/\./g, '')},${decimalPart}`
+      } else {
+        value = integerPart.replace(/\./g, '')
+      }
+
+      // Menghapus titik di bagian desimal dan menambahkan kembali
+      value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')
+
+      // Mengatur nilai input
+      return (event.target.value = value)
     }
   }
 })

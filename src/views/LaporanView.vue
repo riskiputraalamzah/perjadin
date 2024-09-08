@@ -75,7 +75,7 @@ const generatePdf = debounce(async () => {
       <h5 class="card-header text-dark">Pilih Nomor Surat Tugas</h5>
       <div class="card-body">
         <div class="text-center" v-if="loading">Loading Data</div>
-        <ul class="list-group" v-else>
+        <ul class="list-group" v-if="dataST.length">
           <li
             v-for="(data, index) in dataST"
             :key="index"
@@ -86,6 +86,7 @@ const generatePdf = debounce(async () => {
             <input class="form-check-input" type="checkbox" :checked="selectedItem === data" />
           </li>
         </ul>
+        <div class="text-center" v-else>Data Masih Kosong</div>
       </div>
     </div>
 
@@ -97,7 +98,7 @@ const generatePdf = debounce(async () => {
           {{ loadingPdf ? 'Proses...' : 'Cetak PDF' }}
         </button>
       </div>
-      <div class="card-body">
+      <div class="card-body overflow-auto">
         <div id="content" class="content-to-pdf">
           <div class="row g-0 align-items-center border-black border-bottom border-5">
             <div class="col-2">
@@ -133,93 +134,100 @@ const generatePdf = debounce(async () => {
           <div class="d-flex">
             <span class="me-4">I.</span>
             <table>
-              <tr>
-                <td class="kolompertama">Nama</td>
-                <td class="pe-2">:</td>
-                <td>Karsono</td>
-              </tr>
-              <tr>
-                <td class="kolompertama">Jabatan</td>
-                <td class="pe-2">:</td>
-                <td>Pejabat Penandatanganan Kontrak BPVP Sidoarjo</td>
-              </tr>
-              <tr>
-                <td class="kolompertama">Alamat</td>
-                <td class="pe-2">:</td>
-                <td>Jalan raya kebaron</td>
-              </tr>
-              <tr>
-                <td colspan="3" class="text-start">
-                  Untuk Selanjutnya disebut..... <b>PIHAK PERTAMA</b>......
-                </td>
-              </tr>
+              <tbody>
+                <tr>
+                  <td class="kolompertama">Nama</td>
+                  <td class="pe-2">:</td>
+                  <td>Karsono</td>
+                </tr>
+                <tr>
+                  <td class="kolompertama">Jabatan</td>
+                  <td class="pe-2">:</td>
+                  <td>Pejabat Penandatanganan Kontrak BPVP Sidoarjo</td>
+                </tr>
+                <tr>
+                  <td class="kolompertama">Alamat</td>
+                  <td class="pe-2">:</td>
+                  <td>Jalan raya kebaron</td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="text-start">
+                    Untuk Selanjutnya disebut..... <b>PIHAK PERTAMA</b>......
+                  </td>
+                </tr>
+              </tbody>
             </table>
           </div>
           <div class="d-flex mt-4">
             <span class="me-4">II.</span>
             <table>
-              <tr>
-                <td class="kolompertama">Nama</td>
-                <td class="pe-2">:</td>
-                <td>sholehiddin ST., MT.</td>
-              </tr>
-              <tr>
-                <td class="kolompertama">Jabatan</td>
-                <td class="pe-2">:</td>
-                <td>Direktur</td>
-              </tr>
-              <tr>
-                <td class="kolompertama">Perusahaan</td>
-                <td class="pe-2">:</td>
-                <td>CV.Makarya Engineering</td>
-              </tr>
-              <tr>
-                <td class="kolompertama">Alamat</td>
-                <td class="pe-2">:</td>
-                <td>Jl. Banyu Urip Kidul I No.6 Surabaya, Jawa Timur</td>
-              </tr>
-              <tr>
-                <td colspan="3" class="text-start">
-                  Untuk Selanjutnya disebut..... <b>PIHAK KEDUA</b>......
-                </td>
-              </tr>
+              <tbody>
+                <tr>
+                  <td class="kolompertama">Nama</td>
+                  <td class="pe-2">:</td>
+                  <td>sholehiddin ST., MT.</td>
+                </tr>
+                <tr>
+                  <td class="kolompertama">Jabatan</td>
+                  <td class="pe-2">:</td>
+                  <td>Direktur</td>
+                </tr>
+                <tr>
+                  <td class="kolompertama">Perusahaan</td>
+                  <td class="pe-2">:</td>
+                  <td>CV.Makarya Engineering</td>
+                </tr>
+                <tr>
+                  <td class="kolompertama">Alamat</td>
+                  <td class="pe-2">:</td>
+                  <td>Jl. Banyu Urip Kidul I No.6 Surabaya, Jawa Timur</td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="text-start">
+                    Untuk Selanjutnya disebut..... <b>PIHAK KEDUA</b>......
+                  </td>
+                </tr>
+              </tbody>
             </table>
           </div>
           <div class="d-flex mt-4">
             <span class="me-4">A.</span>
             <table>
-              <tr>
-                <td class="text-start">Pada Kegiatan/Proyek :</td>
-                <!-- <td class="pe-2">:</td> -->
-                <td></td>
-              </tr>
-              <tr>
-                <td class="kolompertama">Surat Perjanjian Pekerjaan</td>
-                <td class="pe-2">:</td>
-                <td>2.21/3015/UM.02.03/V/2024 <br />tanggal 07 mei 2024</td>
-              </tr>
-              <tr>
-                <td class="kolompertama">Pekerjaan</td>
-                <td class="pe-2">:</td>
-                <td>Pengawasan Revitalisasi jalan Keliling Seksi Belakang BPVP Sidoarjo</td>
-              </tr>
-              <tr>
-                <td class="kolompertama">Tahun Anggaran</td>
-                <td class="pe-2">:</td>
-                <td>2024</td>
-              </tr>
-              <tr>
-                <td class="kolompertama">Lokasi</td>
-                <td class="pe-2">:</td>
-                <td>
-                  Jalan Raya Kebaron No. 1, Kebaron, Tulangan, Kabupaten Sidoarjo, Jawa Timur 61273
-                </td>
-              </tr>
-              <tr>
-                <td colspan="3" class="text-start">
-                  Untuk Selanjutnya disebut..... <b>PIHAK PERTAMA</b>......
-                </td>
-              </tr>
+              <tbody>
+                <tr>
+                  <td class="text-start">Pada Kegiatan/Proyek :</td>
+                  <!-- <td class="pe-2">:</td> -->
+                  <td></td>
+                </tr>
+                <tr>
+                  <td class="kolompertama">Surat Perjanjian Pekerjaan</td>
+                  <td class="pe-2">:</td>
+                  <td>2.21/3015/UM.02.03/V/2024 <br />tanggal 07 mei 2024</td>
+                </tr>
+                <tr>
+                  <td class="kolompertama">Pekerjaan</td>
+                  <td class="pe-2">:</td>
+                  <td>Pengawasan Revitalisasi jalan Keliling Seksi Belakang BPVP Sidoarjo</td>
+                </tr>
+                <tr>
+                  <td class="kolompertama">Tahun Anggaran</td>
+                  <td class="pe-2">:</td>
+                  <td>2024</td>
+                </tr>
+                <tr>
+                  <td class="kolompertama">Lokasi</td>
+                  <td class="pe-2">:</td>
+                  <td>
+                    Jalan Raya Kebaron No. 1, Kebaron, Tulangan, Kabupaten Sidoarjo, Jawa Timur
+                    61273
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="text-start">
+                    Untuk Selanjutnya disebut..... <b>PIHAK PERTAMA</b>......
+                  </td>
+                </tr>
+              </tbody>
             </table>
           </div>
           <div class="d-flex my-4">
@@ -254,6 +262,11 @@ const generatePdf = debounce(async () => {
   background-color: #fff;
   color: #000;
   font-family: Arial, sans-serif;
+  margin: 0 auto;
+}
+.content-to-pdf table td {
+  text-wrap: wrap !important;
+  vertical-align: top;
 }
 .content-to-pdf .title {
   color: black;
