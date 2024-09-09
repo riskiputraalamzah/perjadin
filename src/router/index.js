@@ -45,7 +45,19 @@ const router = createRouter({
       path: '/spm',
       name: 'spm',
       meta: { mustLogin: true },
-      component: () => import('../views/MainSPMView.vue')
+      component: () => import('../views/SPM/MainSPMView.vue')
+    },
+    {
+      path: '/spm/create',
+      name: 'spmCreate',
+      meta: { mustLogin: true },
+      component: () => import('../views/SPM/CreateSPM.vue')
+    },
+    {
+      path: '/spm/:id/edit',
+      name: 'spmEdit',
+      meta: { mustLogin: true },
+      component: () => import('../views/SPM/EditSPM.vue')
     },
     {
       path: '/sp2d',

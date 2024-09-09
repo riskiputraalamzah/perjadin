@@ -50,7 +50,7 @@ const toggleConfirmPassword = ref(false)
 <template>
   <div class="card-body">
     <router-link class="text-nowrap logo-img text-center d-block py-3 w-100" to="/register"
-      ><img src="/assets/images/gmbr_3.png" width="180" alt=""
+      ><img src="/assets/images/logo.png" width="100" alt=""
     /></router-link>
 
     <p class="text-center fw-bold text-dark display-6">Register</p>

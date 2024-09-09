@@ -11,7 +11,7 @@ const isActive = (path) => {
     <div>
       <div class="brand-logo d-flex align-items-center justify-content-between">
         <router-link class="text-nowrap logo-img d-flex align-items-center g-3" to="/">
-          <img src="/assets/images/gmbr_3.png" width="80" alt="" />
+          <img src="/assets/images/logo.png" width="80" alt="" />
           <span class="h3 text-dark">Perjadin</span></router-link
         >
 
@@ -101,7 +101,7 @@ const isActive = (path) => {
             </router-link>
           </li>
           <li class="sidebar-item">
-            <router-link to="/spm" class="sidebar-link" exact-active-class="active">
+            <router-link to="/spm" :class="['sidebar-link', isActive('/spm') ? 'active' : '']">
               <span>
                 <i class="ti ti-file-description"></i>
               </span>

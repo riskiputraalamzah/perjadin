@@ -153,16 +153,9 @@ const modalProps = ref({
     <h1 class="text-dark fw-bold mb-4">List Surat Perintah Membayar</h1>
 
     <!-- Tombol untuk membuka modal -->
-    <button
-      type="button"
-      class="btn btn-primary mb-4"
-      @click="openAddModal"
-      :disabled="loading"
-      data-bs-toggle="modal"
-      data-bs-target="#staticBackdrop"
-    >
+    <router-link to="/spm/create" class="btn btn-primary mb-4" :disabled="loading">
       Tambah Data
-    </button>
+    </router-link>
     <div class="table-responsive">
       <table class="table table-striped table-bordered">
         <thead>
@@ -176,17 +169,12 @@ const modalProps = ref({
         <tbody v-if="listSPM.length > 0">
           <tr v-for="(st, key) in listSPM" :key="key">
             <td v-text="st.noSPM"></td>
-            <td v-text="formatDate(st.tgl)"></td>
+            <td v-text="formatDate(st.tglSPM)"></td>
             <td v-text="formatRupiah(st.nilaiSPM)"></td>
 
             <td class="text-center">
               <button class="btn-danger btn btn-sm" @click="handleDelete(st.id)">Hapus</button>
-              <button
-                data-bs-toggle="modal"
-                data-bs-target="#staticBackdrop"
-                class="btn-sm btn-warning btn"
-                @click="openEditModal(st)"
-              >
+              <button class="btn-sm btn-warning btn" @click="$router.push(`/spm/${st.id}/edit`)">
                 Edit
               </button>
             </td>
@@ -223,7 +211,13 @@ const modalProps = ref({
           </div>
           <div class="mb-3">
             <label for="nilaiSPM" class="form-label">Nilai SPM</label>
-            <input v-model="dataSPM.noSPM" type="text" class="form-control" id="nilaiSPM" />
+            <input
+              v-model="dataSPM.noSPM"
+              readonly
+              type="text"
+              class="form-control"
+              id="nilaiSPM"
+            />
           </div>
         </form>
       </template>
