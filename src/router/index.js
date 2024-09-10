@@ -63,7 +63,19 @@ const router = createRouter({
       path: '/sp2d',
       name: 'sp2d',
       meta: { mustLogin: true },
-      component: () => import('../views/MainSP2DView.vue')
+      component: () => import('../views/SP2D/MainSP2DView.vue')
+    },
+    {
+      path: '/sp2d/create',
+      name: 'sp2dCreate',
+      meta: { mustLogin: true },
+      component: () => import('../views/SP2D/CreateView.vue')
+    },
+    {
+      path: '/sp2d/:id/edit',
+      name: 'sp2dEdit',
+      meta: { mustLogin: true },
+      component: () => import('../views/SP2D/EditView.vue')
     },
     {
       path: '/surat-perintah-perjalanan-dinas',

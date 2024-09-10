@@ -1,1 +1,0 @@
-import{S as e}from"./index-Dlj3Nbua.js";const r=e.mixin({toast:!0,position:"top-end",showConfirmButton:!1,timer:2e3,showCloseButton:!0,timerProgressBar:!0,didOpen:t=>{t.addEventListener("mouseenter",e.stopTimer),t.addEventListener("mouseleave",e.resumeTimer)}});export{r as T};

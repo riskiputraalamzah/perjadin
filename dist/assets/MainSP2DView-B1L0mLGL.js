@@ -1,1 +1,0 @@
-import{_ as a}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c as r,a as t,o as n}from"./index-Dlj3Nbua.js";const o={};function s(c,e){return n(),r("div",null,e[0]||(e[0]=[t("h1",{class:"text-dark fw-bold mb-4"},"List Surat Perintah Pencairan Dana",-1)]))}const l=a(o,[["render",s]]);export{l as default};
