@@ -13,7 +13,7 @@
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
     "format": "prettier --write src/",
-    "buildPush": "npm run build && git add . && read -p 'Masukkan pesan commit: ' msg && git commit -m '$msg' && git push"
+    "buildPush": "sh -c 'npm run build && git add . && read -p \"Masukkan pesan commit: \" msg && git commit -m \"$msg\" && git push'"
   },
   "dependencies": {
     "2": "^3.0.0",
