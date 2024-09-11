@@ -56,11 +56,13 @@ const handleSubmit = async () => {
   }
 
   const data = {
-    file: selectedImage.value,
+    ...(selectedImage.value ? { file: selectedImage.value } : {}),
     name: namaLengkap.value
   }
-  const userUpdated = await idbStore.updateData('users', 'username', userData.value.username, data)
 
+  // console.log({ data })
+  const userUpdated = await idbStore.updateData('users', 'id', userData.value.id, data)
+  // console.log(userUpdated)
   delete userUpdated.file
   idbStore.updateUserLocalStorage(userUpdated)
 

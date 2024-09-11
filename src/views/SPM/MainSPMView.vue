@@ -13,10 +13,19 @@ const listSPM = ref([])
 
 const loading = ref(true)
 
-// Fetch data dari IndexedDB ketika komponen di-mount
-onMounted(async () => {
-  console.log('onmounted spm')
+import { useMainStore } from '@/stores/main'
+const mainStore = useMainStore()
+const fetchAndCaching = async () => {
   listSPM.value = await idbStore.fetchData(objectStore)
+  mainStore.dataSPM = listSPM.value
+}
+onMounted(async () => {
+  if (mainStore.dataSPM) {
+    loading.value = !loading.value
+    listSPM.value = mainStore.dataSPM
+    return
+  }
+  await fetchAndCaching()
   loading.value = !loading.value
 })
 
@@ -40,7 +49,7 @@ const handleDelete = async (id) => {
       // Menampilkan notifikasi sukses
       if (deleteItem) {
         Toast.fire({ icon: 'success', title: `Data berhasil dihapus` })
-        listSPM.value = await idbStore.fetchData(objectStore)
+        await fetchAndCaching(objectStore)
       } else {
         Toast.fire({ icon: 'error', title: 'Gagal menghapus data' })
       }

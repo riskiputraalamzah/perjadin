@@ -61,12 +61,21 @@ const modalProps = ref({
 const SPPDList = ref([])
 const loading = ref(true)
 
-// Fetch data dari IndexedDB ketika komponen di-mount
-onMounted(async () => {
+import { useMainStore } from '@/stores/main'
+const mainStore = useMainStore()
+const fetchAndCaching = async () => {
   SPPDList.value = await idbStore.fetchData(objectStore)
+  mainStore.dataSPPD = SPPDList.value
+}
+onMounted(async () => {
+  if (mainStore.dataSPPD) {
+    loading.value = !loading.value
+    SPPDList.value = mainStore.dataSPPD
+    return
+  }
+  await fetchAndCaching()
   loading.value = !loading.value
 })
-
 const validateForm = () => {
   if (!dataSPPD.value.noSPPD) {
     Toast.fire({ icon: 'error', title: 'Nomor SPPD harus diisi' })
@@ -113,7 +122,7 @@ const handleConfirm = async ({ actionType }) => {
       await idbStore.updateData(objectStore, 'id', jsonData.id, jsonData)
       Toast.fire({ icon: 'success', title: 'Data SPPD berhasil diubah' })
     }
-    SPPDList.value = await idbStore.fetchData(objectStore)
+    await fetchAndCaching(objectStore)
     resetForm()
 
     // Menutup modal menggunakan Bootstrap Modal API
@@ -149,7 +158,7 @@ const handleDelete = async (id) => {
       const deleteItem = await idbStore.deleteItemById(objectStore, id)
       if (deleteItem) {
         Toast.fire({ icon: 'success', title: `Data SPPD berhasil dihapus` })
-        SPPDList.value = await idbStore.fetchData(objectStore)
+        await fetchAndCaching(objectStore)
       } else {
         Toast.fire({ icon: 'error', title: 'Gagal menghapus data' })
       }

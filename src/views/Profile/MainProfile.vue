@@ -57,7 +57,7 @@ const handledSubmit = async () => {
     password: authentication.value.passwordBaru
   }
 
-  await idbStore.updateData('users', 'username', userData.value.username, newData)
+  await idbStore.updateData('users', 'id', userData.value.id, newData)
 
   resetAuthentication()
   return Swal.fire({
@@ -72,8 +72,6 @@ onMounted(async () => {
 
   userData.value = row
   imageSrc.value = avatar
-
-
 })
 </script>
 <template>

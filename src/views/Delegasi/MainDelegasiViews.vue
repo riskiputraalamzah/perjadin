@@ -34,11 +34,26 @@ const filteredST = computed(() => {
 // Selected data
 const selectedST = ref(null)
 
-// Fetch data dari IndexedDB ketika komponen di-mount
+const fetchAndCaching = async () => {
+  const [stData, pegawaiData] = await Promise.all([
+    idbStore.fetchData('suratTugas'),
+    idbStore.fetchData(objectStore)
+  ])
+
+  // Menetapkan data ke reaktif variabel
+  STData.value = stData
+  delegasiPegawai.value = pegawaiData
+  mainStore.dataST = stData
+  mainStore.dataDelegasiPegawai = pegawaiData
+}
 onMounted(async () => {
-  console.log('onmounted delegasi')
-  STData.value = await idbStore.fetchData('suratTugas')
-  delegasiPegawai.value = await idbStore.fetchData(objectStore)
+  if (mainStore.dataST && mainStore.dataDelegasiPegawai) {
+    loading.value = !loading.value
+    STData.value = mainStore.dataST
+    delegasiPegawai.value = mainStore.dataDelegasiPegawai
+    return
+  }
+  await fetchAndCaching()
   loading.value = !loading.value
 })
 
@@ -63,7 +78,7 @@ const handleDelete = async (id, noST) => {
       // Menampilkan notifikasi sukses
       if (deleteItem) {
         Toast.fire({ icon: 'success', title: `Data Delegasi Pegawai berhasil dihapus` })
-        delegasiPegawai.value = await idbStore.fetchData(objectStore)
+        await fetchAndCaching(objectStore)
       } else {
         Toast.fire({ icon: 'error', title: 'Gagal menghapus data' })
       }
@@ -108,13 +123,13 @@ const handleConfirm = async ({ actionType, data }) => {
       if (confirmResult.isConfirmed) {
         await router.push({ name: 'manageDelegasi', params: { noST: selectedST.value.noST } })
       } else {
-        delegasiPegawai.value = await idbStore.fetchData(objectStore)
+        await fetchAndCaching(objectStore)
       }
 
       setTimeout(() => document.body.removeAttribute('style'), 2000)
     } else if (actionType === 'edit') {
       await idbStore.updateData('delegasiPegawai', 'id', data.id, dataStore)
-      delegasiPegawai.value = await idbStore.fetchData(objectStore)
+      await fetchAndCaching(objectStore)
       Toast.fire({ icon: 'success', title: 'NO ST berhasil diubah' })
     }
 

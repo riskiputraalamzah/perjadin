@@ -30,14 +30,28 @@ const getDataDelegasi = async () => {
   if (!data) {
     return router.push({ name: 'delegasi' })
   }
+
   SPPDData.value = await idbStore.fetchData('sppd')
   PegawaiData.value = await idbStore.fetchData('pegawai')
   delegasiPegawai.value = await idbStore.fetchData('delegasiPegawai')
+
+  mainStore.dataSPPD = SPPDData.value
+  mainStore.dataPegawai = PegawaiData.value
+  mainStore.dataDelegasiPegawai = delegasiPegawai.value
   currentDelegasi.value = data
 }
 
 onMounted(async () => {
   try {
+    if (mainStore.dataSPPD && mainStore.dataPegawai && mainStore.dataDelegasiPegawai) {
+      SPPDData.value = mainStore.dataSPPD
+      PegawaiData.value = mainStore.dataPegawai
+      delegasiPegawai.value = mainStore.dataDelegasiPegawai
+      currentDelegasi.value = await idbStore.findData('delegasiPegawai', idDelegasi)
+      loading.value = !loading.value
+      return
+    }
+
     await getDataDelegasi()
     // STData.value = await idbStore.fetchData('suratTugas')
 

@@ -13,10 +13,19 @@ const listSP2D = ref([])
 
 const loading = ref(true)
 
-// Fetch data dari IndexedDB ketika komponen di-mount
-onMounted(async () => {
-  console.log('onmounted sp2d')
+import { useMainStore } from '@/stores/main'
+const mainStore = useMainStore()
+const fetchAndCaching = async () => {
   listSP2D.value = await idbStore.fetchData(objectStore)
+  mainStore.dataSP2D = listSP2D.value
+}
+onMounted(async () => {
+  if (mainStore.dataSP2D) {
+    loading.value = !loading.value
+    listSP2D.value = mainStore.dataSP2D
+    return
+  }
+  await fetchAndCaching()
   loading.value = !loading.value
 })
 
@@ -40,7 +49,7 @@ const handleDelete = async (id) => {
       // Menampilkan notifikasi sukses
       if (deleteItem) {
         Toast.fire({ icon: 'success', title: `Data berhasil dihapus` })
-        listSP2D.value = await idbStore.fetchData(objectStore)
+        await fetchAndCaching(objectStore)
       } else {
         Toast.fire({ icon: 'error', title: 'Gagal menghapus data' })
       }

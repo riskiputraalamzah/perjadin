@@ -74,7 +74,6 @@ const generatePdf = debounce(async () => {
     <div class="card">
       <h5 class="card-header text-dark">Pilih Nomor Surat Tugas</h5>
       <div class="card-body">
-        <div class="text-center" v-if="loading">Loading Data</div>
         <ul class="list-group" v-if="dataST.length">
           <li
             v-for="(data, index) in dataST"
@@ -86,7 +85,8 @@ const generatePdf = debounce(async () => {
             <input class="form-check-input" type="checkbox" :checked="selectedItem === data" />
           </li>
         </ul>
-        <div class="text-center" v-else>Data Masih Kosong</div>
+        <div class="text-center" v-else-if="loading">Loading</div>
+        <div class="text-center" v-else>Data ST (delegasi pegawai) Masih Kosong</div>
       </div>
     </div>
 

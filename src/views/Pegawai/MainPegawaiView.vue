@@ -4,9 +4,10 @@ import ModalItem from '@/components/ModalItem.vue'
 import { useIDBStore } from '@/stores/IDB'
 import Swal from 'sweetalert2'
 import { Toast } from '@/components/ToastAlert'
+import { useMainStore } from '@/stores/main'
 
 const idbStore = useIDBStore()
-
+const mainStore = useMainStore()
 const objectStore = 'pegawai'
 
 const dataPegawai = ref({
@@ -21,9 +22,18 @@ const pegawaiList = ref([])
 const loading = ref(true)
 
 // Fetch data dari IndexedDB ketika komponen di-mount
-onMounted(async () => {
-  console.log('onmounted pegawai')
+
+const fetchAndCaching = async () => {
   pegawaiList.value = await idbStore.fetchData(objectStore)
+  mainStore.dataPegawai = pegawaiList.value
+}
+onMounted(async () => {
+  if (mainStore.dataPegawai) {
+    loading.value = !loading.value
+    pegawaiList.value = mainStore.dataPegawai
+    return
+  }
+  await fetchAndCaching()
   loading.value = !loading.value
 })
 
@@ -60,7 +70,7 @@ const handleConfirm = async ({ actionType }) => {
       await idbStore.updateData(objectStore, 'id', jsonData.id, jsonData)
       Toast.fire({ icon: 'success', title: 'Data Pegawai berhasil diubah' })
     }
-    pegawaiList.value = await idbStore.fetchData(objectStore)
+    await fetchAndCaching(objectStore)
     resetForm()
 
     // Menutup modal menggunakan Bootstrap Modal API
@@ -111,7 +121,7 @@ const handleDelete = async (id) => {
       // Menampilkan notifikasi sukses
       if (deleteItem) {
         Toast.fire({ icon: 'success', title: `Data ${objectStore} berhasil dihapus` })
-        pegawaiList.value = await idbStore.fetchData(objectStore)
+        await fetchAndCaching(objectStore)
       } else {
         Toast.fire({ icon: 'error', title: 'Gagal menghapus data' })
       }
