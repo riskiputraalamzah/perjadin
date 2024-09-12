@@ -4,6 +4,11 @@ import { useIDBStore } from '@/stores/IDB'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 
+import VueQrcode from '@chenfengyuan/vue-qrcode'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
 // State management
 const dataST = ref([])
 const selectedItem = ref(null)
@@ -39,19 +44,40 @@ const loadingPdf = ref(false)
 const generatePdf = debounce(async () => {
   if (loadingPdf.value) return
   loadingPdf.value = !loadingPdf.value
+
   const content = document.getElementById('content')
+
+  // Mengubah konten menjadi canvas dengan skala lebih tinggi agar hasil lebih baik
   const canvas = await html2canvas(content, { scale: 2 })
   const imgData = canvas.toDataURL('image/png')
 
   const pdf = new jsPDF('p', 'mm', 'a4')
-  const pageWidth = 210
-  const imgWidth = pageWidth
-  const imgHeight = (canvas.height * pageWidth) / canvas.width
+  const pageWidth = 210 // Lebar halaman PDF dalam mm (A4)
+  const pageHeight = 297 // Tinggi halaman PDF dalam mm (A4)
 
-  pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
+  const imgWidth = pageWidth
+  const imgHeight = (canvas.height * pageWidth) / canvas.width // Menghitung tinggi gambar yang proporsional
+
+  let position = 0
+  if (imgHeight <= pageHeight) {
+    // Jika gambar cukup untuk satu halaman
+    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
+  } else {
+    // Jika gambar lebih tinggi dari satu halaman
+    let heightLeft = imgHeight
+
+    while (heightLeft > 0) {
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+      heightLeft -= pageHeight
+      position = heightLeft > 0 ? -pageHeight : 0
+
+      if (heightLeft > 0) {
+        pdf.addPage() // Tambahkan halaman baru jika masih ada konten
+      }
+    }
+  }
 
   const pdfBlob = pdf.output('blob')
-
   pdfData.value = URL.createObjectURL(pdfBlob)
   window.open(pdfData.value, '_blank')
   loadingPdf.value = !loadingPdf.value
@@ -66,6 +92,15 @@ const generatePdf = debounce(async () => {
 
 //   URL.revokeObjectURL(pdfData.value)
 // }
+
+const urlQrCode = (noST) => {
+  return `${window.location.origin}${
+    router.resolve({
+      name: 'detailDelegasi',
+      params: { noST }
+    }).href
+  }`
+}
 </script>
 <template>
   <div>
@@ -100,7 +135,7 @@ const generatePdf = debounce(async () => {
       </div>
       <div class="card-body overflow-auto">
         <div id="content" class="content-to-pdf">
-          <div class="row g-0 align-items-center border-black border-bottom border-5">
+          <div class="row g-0 py-1 align-items-center border-black border-bottom border-3">
             <div class="col-2">
               <img src="/assets/images/logo.png" class="img-fluid" alt="" />
             </div>
@@ -119,7 +154,7 @@ const generatePdf = debounce(async () => {
             </div>
           </div>
           <!-- Tambahkan elemen lainnya sesuai kebutuhan -->
-          <div class="text-center mt-4 lh-1">
+          <div class="text-center my-1 lh-1">
             <h5>
               <span class="title-surat border-bottom border-black border-3">SURAT TUGAS</span>
             </h5>
@@ -127,123 +162,141 @@ const generatePdf = debounce(async () => {
               <span class="no-surat">NOMOR {{ selectedItem.noST }}</span>
             </h5>
           </div>
-          <p class="mt-4">
-            Pada Hari <b>Senin</b> tanggal <b>Dua</b> bulan <b>September</b>tahun
-            <b>Dua Ribu Dua Puluh Empat</b> ,kami yang bertanda tangan dibawah ini :
-          </p>
-          <div class="d-flex">
-            <span class="me-4">I.</span>
-            <table>
-              <tbody>
-                <tr>
-                  <td class="kolompertama">Nama</td>
-                  <td class="pe-2">:</td>
-                  <td>Karsono</td>
-                </tr>
-                <tr>
-                  <td class="kolompertama">Jabatan</td>
-                  <td class="pe-2">:</td>
-                  <td>Pejabat Penandatanganan Kontrak BPVP Sidoarjo</td>
-                </tr>
-                <tr>
-                  <td class="kolompertama">Alamat</td>
-                  <td class="pe-2">:</td>
-                  <td>Jalan raya kebaron</td>
-                </tr>
-                <tr>
-                  <td colspan="3" class="text-start">
-                    Untuk Selanjutnya disebut..... <b>PIHAK PERTAMA</b>......
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="d-flex mt-4">
-            <span class="me-4">II.</span>
-            <table>
-              <tbody>
-                <tr>
-                  <td class="kolompertama">Nama</td>
-                  <td class="pe-2">:</td>
-                  <td>sholehiddin ST., MT.</td>
-                </tr>
-                <tr>
-                  <td class="kolompertama">Jabatan</td>
-                  <td class="pe-2">:</td>
-                  <td>Direktur</td>
-                </tr>
-                <tr>
-                  <td class="kolompertama">Perusahaan</td>
-                  <td class="pe-2">:</td>
-                  <td>CV.Makarya Engineering</td>
-                </tr>
-                <tr>
-                  <td class="kolompertama">Alamat</td>
-                  <td class="pe-2">:</td>
-                  <td>Jl. Banyu Urip Kidul I No.6 Surabaya, Jawa Timur</td>
-                </tr>
-                <tr>
-                  <td colspan="3" class="text-start">
-                    Untuk Selanjutnya disebut..... <b>PIHAK KEDUA</b>......
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="d-flex mt-4">
-            <span class="me-4">A.</span>
-            <table>
-              <tbody>
-                <tr>
-                  <td class="text-start">Pada Kegiatan/Proyek :</td>
-                  <!-- <td class="pe-2">:</td> -->
-                  <td></td>
-                </tr>
-                <tr>
-                  <td class="kolompertama">Surat Perjanjian Pekerjaan</td>
-                  <td class="pe-2">:</td>
-                  <td>2.21/3015/UM.02.03/V/2024 <br />tanggal 07 mei 2024</td>
-                </tr>
-                <tr>
-                  <td class="kolompertama">Pekerjaan</td>
-                  <td class="pe-2">:</td>
-                  <td>Pengawasan Revitalisasi jalan Keliling Seksi Belakang BPVP Sidoarjo</td>
-                </tr>
-                <tr>
-                  <td class="kolompertama">Tahun Anggaran</td>
-                  <td class="pe-2">:</td>
-                  <td>2024</td>
-                </tr>
-                <tr>
-                  <td class="kolompertama">Lokasi</td>
-                  <td class="pe-2">:</td>
-                  <td>
-                    Jalan Raya Kebaron No. 1, Kebaron, Tulangan, Kabupaten Sidoarjo, Jawa Timur
-                    61273
-                  </td>
-                </tr>
-                <tr>
-                  <td colspan="3" class="text-start">
-                    Untuk Selanjutnya disebut..... <b>PIHAK PERTAMA</b>......
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="d-flex my-4">
-            <span class="me-4">B.</span>
-            <div style="text-align: justify">
-              Dengan ini menyatakan bahwa Pekerjaan Pengawasan Revitalisasi Jalan Keliling Seksi
-              Belakang BPVP Sidoarjo Tahun Anggaran 2024 telah mencapai prestasi pekerjaan fisik
-              sebesar 91,89% sesuai Laporan Periode 12 s/d 18 Agustus (Minggu Ke-15) yang disusun
-              oleh Penyedia/Pelaksana Konstruksi, kemudian telah diperiksa oleh Konsultan Pengawas
-              Konstruksi dan disetujui oleh Pejabat Pembuat Komitmen (PPK) sebagaimana terlampir.
-            </div>
-          </div>
-          <div style="text-align: justify">
-            Demikian Berita Acara Kemajuan Pekerjaan ini dibuat dalam rangkap secukupnya untuk dapat
-            dipergunakan sebagaimana mestinya.
-          </div>
+          <table class="table table-sm table-borderless">
+            <tbody>
+              <tr>
+                <td class="text-start">Menimbang</td>
+                <td>:</td>
+                <td class="ps-4">
+                  <div class="d-flex">
+                    <div class="pe-2">a.</div>
+                    <div class="text-justify">
+                      Lorem ipsum dolor sit amet consectetur, adipisicing elit. Commodi, voluptate
+                      repellendus!
+                    </div>
+                  </div>
+                  <div class="d-flex">
+                    <div class="pe-2">b.</div>
+                    <div class="text-justify">
+                      Lorem, ipsum dolor sit amet consectetur adipisicing elit. Repellat incidunt,
+                      eos mollitia quisquam provident illo!
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-start">Dasar</td>
+                <td>:</td>
+                <td class="ps-4">
+                  <div class="d-flex">
+                    <div class="pe-2">1.</div>
+                    <div class="text-justify">
+                      Lorem ipsum dolor sit amet consectetur, adipisicing elit. Commodi, voluptate
+                      repellendus!
+                    </div>
+                  </div>
+                  <div class="d-flex">
+                    <div class="pe-2">2.</div>
+                    <div class="text-justify">
+                      Lorem, ipsum dolor sit amet consectetur adipisicing elit. Repellat incidunt,
+                      eos mollitia quisquam provident illo!
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3" class="text-center">Menugaskan :</td>
+              </tr>
+              <tr>
+                <td class="text-start">Kepada</td>
+                <td>:</td>
+                <td class="ps-4">
+                  <table class="table table-sm table-borderless">
+                    <tbody>
+                      <tr>
+                        <td style="padding: 0">Nama</td>
+                        <td style="padding: 0">:</td>
+                        <td style="padding: 0">Risna Amalia, A.Md</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 0">NIP</td>
+                        <td style="padding: 0">:</td>
+                        <td style="padding: 0">121213213</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 0">Pangkat/Gol</td>
+                        <td style="padding: 0">:</td>
+                        <td style="padding: 0">Penata Muda Tk.I/III B</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 0">Jabatan</td>
+                        <td style="padding: 0">:</td>
+                        <td style="padding: 0">Instruktur Mahir</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="text-start">Untuk</td>
+                <td>:</td>
+                <td class="ps-4">
+                  <div class="d-flex">
+                    <div class="pe-2">1.</div>
+                    <div class="text-justify">
+                      Lorem ipsum dolor sit amet consectetur, adipisicing elit. Commodi, voluptate
+                      repellendus!
+                    </div>
+                  </div>
+                  <div class="d-flex">
+                    <div class="pe-2">2.</div>
+                    <div class="text-justify">
+                      Lorem, ipsum dolor sit amet consectetur adipisicing elit. Repellat incidunt,
+                      eos mollitia quisquam provident illo! Voluptatem reprehenderit quisquam,
+                    </div>
+                  </div>
+                  <div class="d-flex">
+                    <div class="pe-2">3.</div>
+                    <div class="text-justify">
+                      Lorem, ipsum dolor sit amet consectetur adipisicing elit. Repellat incidunt,
+                      eos mollitia quisquam provident illo!
+                    </div>
+                  </div>
+                  <div class="d-flex">
+                    <div class="pe-2">4.</div>
+                    <div class="text-justify">
+                      Lorem, ipsum dolor sit amet consectetur adipisicing elit. Repellat incidunt,
+                      eos mollitia quisquam provident illo! Voluptatem reprehenderit quisquam, eaque
+                      tempora architecto possimus a rem odit eos provident ducimus assumenda ipsa!
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3">
+                  Dengan Surat Tugas ini dibuat untuk dilaksanakan dengan penuh tanggung jawab
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3">
+                  <div class="d-inline-block text-center float-end">
+                    <div>Sidoarjo, 17 April 2024</div>
+                    <div>Kepala Balai</div>
+                    <div>
+                      <VueQrcode
+                        :value="urlQrCode(selectedItem.noST)"
+                        style="height: 100px !important; width: 100px !important"
+                        :level="'H'"
+                      />
+                    </div>
+                    <div>Muhammad Aiza Akbar</div>
+                    <div>NIP 3293289328</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -262,11 +315,17 @@ const generatePdf = debounce(async () => {
   background-color: #fff;
   color: #000;
   font-family: Arial, sans-serif;
+
   margin: 0 auto;
+}
+.content-to-pdf table td * {
+  margin: 0 !important;
 }
 .content-to-pdf table td {
   text-wrap: wrap !important;
   vertical-align: top;
+  color: black !important;
+  text-align: justify;
 }
 .content-to-pdf .title {
   color: black;
@@ -302,5 +361,9 @@ const generatePdf = debounce(async () => {
 }
 table td:nth-child(3) {
   text-align: left;
+}
+
+.text-justify {
+  text-align: justify !important;
 }
 </style>
