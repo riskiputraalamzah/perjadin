@@ -1,10 +1,13 @@
 <script setup>
 import { ref, onMounted, computed, toRaw } from 'vue'
 import { useIDBStore } from '@/stores/IDB'
+import { useMainStore } from '@/stores/main'
 import { Toast } from '@/components/ToastAlert'
 import { useRouter } from 'vue-router'
 const idbStore = useIDBStore()
 const router = useRouter()
+
+const mainStore = useMainStore()
 
 const listST = ref([])
 const form = ref({
@@ -70,6 +73,7 @@ const handleForm = async () => {
   await idbStore.addItem('spm', data)
   isFormValid.value = false
   Toast.fire({ icon: 'success', title: 'Data Berhasil ditambahkan' })
+  mainStore.dataSPM = null
   router.push('/spm')
 }
 </script>
@@ -142,7 +146,7 @@ const handleForm = async () => {
         <div class="card">
           <div class="card-header">Pilih NO ST</div>
           <div class="card-body">
-            <table class="table-striped table table-bordered">
+            <table class="table-sm table table-bordered">
               <thead>
                 <tr>
                   <th>Pilih</th>

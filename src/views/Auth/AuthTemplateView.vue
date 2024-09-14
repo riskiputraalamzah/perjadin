@@ -34,12 +34,31 @@ const loadScriptsSequentially = async () => {
   }
 }
 
-const initDB = async () => {
-  const exist = await idbStore.checkDB()
-  if (!exist) {
-    console.log('initDB called')
-    await idbStore.storeToDB('users', dbUser)
-    console.log('Seeder data berhasil')
+const initDBSeeder = async () => {
+  try {
+    console.log('Checking database existence...')
+    const dbExist = await idbStore.checkDB()
+    if (!dbExist) {
+      console.log('Database does not exist. Initializing...')
+
+      // Inisialisasi object stores lainnya
+      const otherStores = ['users', 'pegawai', 'suratTugas', 'sppd', 'delegasiPegawai', 'sp2d']
+      for (const store of otherStores) {
+        console.log(`Initializing ${store}...`)
+
+        if (store == 'users') {
+          await idbStore.storeToDB(store, dbUser) // Simpan data kosong atau data awal
+        } else {
+          await idbStore.storeToDB(store, []) // Simpan data kosong atau data awal
+        }
+      }
+
+      console.log('Seeder data berhasil')
+    } else {
+      console.log('Database already exists. Skipping initialization.')
+    }
+  } catch (error) {
+    console.error('Error initializing database:', error)
   }
 }
 
@@ -47,7 +66,7 @@ const initDB = async () => {
 onMounted(() => {
   console.log('Auth mounted')
   loadScriptsSequentially()
-  initDB()
+  initDBSeeder()
 })
 </script>
 

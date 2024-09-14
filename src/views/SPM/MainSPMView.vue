@@ -20,6 +20,7 @@ const fetchAndCaching = async () => {
   mainStore.dataSPM = listSPM.value
 }
 onMounted(async () => {
+  console.log(mainStore)
   if (mainStore.dataSPM) {
     loading.value = !loading.value
     listSPM.value = mainStore.dataSPM
@@ -43,6 +44,13 @@ const handleDelete = async (id) => {
   // Jika pengguna mengonfirmasi
   if (result.isConfirmed) {
     try {
+      const isInUse = await checkIfDataInUse(id)
+      // return console.log({ isInUse })
+      if (isInUse?.status) {
+        // Jika data digunakan di object store lain, tampilkan notifikasi error
+        Swal.fire({ icon: 'error', title: `Data gagal dihapus`, text: isInUse.message })
+        return
+      }
       // Menghapus item dari IndexedDB
       const deleteItem = await idbStore.deleteItemById(objectStore, id)
 
@@ -57,6 +65,28 @@ const handleDelete = async (id) => {
       console.error('Error deleting item:', error)
       Toast.fire({ icon: 'error', title: 'Terjadi kesalahan saat menghapus data' })
     }
+  }
+}
+
+// Fungsi untuk memeriksa apakah data digunakan di object store lain
+const checkIfDataInUse = async (id) => {
+  try {
+    const otherStores = ['sp2d']
+
+    for (const store of otherStores) {
+      const data = await idbStore.fetchData(store) // Mendapatkan semua data dari object store
+
+      // Jika object store adalah 'delegasiPegawai'
+
+      const isUsed = data.some((item) => item.spm.id === id)
+      if (isUsed) return { status: true, message: 'Data sedang digunakan pada menu SP2D' } // Jika ditemukan, data sedang digunakan
+    }
+
+    // Jika tidak ditemukan di object store lain, berarti data tidak digunakan
+    return false
+  } catch (error) {
+    console.error('Error checking if data is in use:', error)
+    return false // Jika terjadi error, anggap data tidak sedang digunakan
   }
 }
 </script>

@@ -1,1 +1,0 @@
-import{_ as t}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c as r,a,o}from"./index-xVDuUUEs.js";const s={};function n(c,e){return o(),r("div",null,e[0]||(e[0]=[a("h1",{class:"text-dark fw-bold mb-4"},"List Surat Perintah (SPM/SP2D)",-1)]))}const l=t(s,[["render",n]]);export{l as default};

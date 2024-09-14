@@ -3,7 +3,11 @@ import { ref, onMounted, computed, toRaw } from 'vue'
 import { useIDBStore } from '@/stores/IDB'
 import { Toast } from '@/components/ToastAlert'
 import { useRoute, useRouter } from 'vue-router'
+import { useMainStore } from '@/stores/main'
+const mainStore = useMainStore()
+
 const idbStore = useIDBStore()
+
 const router = useRouter()
 const route = useRoute()
 
@@ -51,6 +55,7 @@ const handleForm = async () => {
   await idbStore.updateData('spm', 'id', id, data)
   isFormValid.value = false
   Toast.fire({ icon: 'success', title: 'Data Berhasil diupdate' })
+  mainStore.dataSPM = null
   router.push('/spm')
 }
 
@@ -175,7 +180,7 @@ const isValidForm = computed({
         <div class="card">
           <div class="card-header">Pilih NO ST</div>
           <div class="card-body">
-            <table class="table-striped table table-bordered">
+            <table class="table-sm table table-bordered">
               <thead>
                 <tr>
                   <th>Pilih</th>

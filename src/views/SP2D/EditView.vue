@@ -3,7 +3,8 @@ import { ref, onMounted, computed, toRaw } from 'vue'
 import { useIDBStore } from '@/stores/IDB'
 import { Toast } from '@/components/ToastAlert'
 import { useRouter, useRoute } from 'vue-router'
-
+import { useMainStore } from '@/stores/main'
+const mainStore = useMainStore()
 const idbStore = useIDBStore()
 const router = useRouter()
 const route = useRoute()
@@ -72,7 +73,7 @@ const handleForm = async () => {
 
   await idbStore.updateData('sp2d', 'id', id, data)
   Toast.fire({ icon: 'success', title: 'Data Berhasil diperbarui' })
-
+  mainStore.dataSP2D = null
   isFormValid.value = false
   router.push('/sp2d')
 }

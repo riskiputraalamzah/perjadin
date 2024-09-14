@@ -155,6 +155,15 @@ const handleDelete = async (id) => {
 
   if (result.isConfirmed) {
     try {
+      const isInUse = await checkIfDataInUse(id)
+
+      // return console.log({ isInUse })
+      if (isInUse?.status) {
+        // Jika data digunakan di object store lain, tampilkan notifikasi error
+        Swal.fire({ icon: 'error', title: `Data gagal dihapus`, text: isInUse.message })
+        return
+      }
+
       const deleteItem = await idbStore.deleteItemById(objectStore, id)
       if (deleteItem) {
         Toast.fire({ icon: 'success', title: `Data SPPD berhasil dihapus` })
@@ -169,6 +178,32 @@ const handleDelete = async (id) => {
   }
 }
 
+const checkIfDataInUse = async (id) => {
+  try {
+    // Misal ada beberapa object store lain seperti 'otherStore1' dan 'otherStore2'
+    const otherStores = ['delegasiPegawai']
+
+    for (const store of otherStores) {
+      const data = await idbStore.fetchData(store) // Mendapatkan semua data dari object store
+
+      // Periksa apakah data di dalam object store berbentuk array of objects
+
+      console.log({ dataarray: data, id })
+      // Jika array, periksa apakah ada object di dalam array yang memiliki ID yang sama
+      const isUsed = data.some((item) =>
+        item.relation?.some((relationItem) => relationItem.noSPPD?.id === id)
+      )
+      if (isUsed)
+        return { status: true, message: 'Data sedang digunakan pada menu Delegasi Pegawai' } // Jika ditemukan, data sedang digunakan
+    }
+
+    // Jika tidak ditemukan di object store lain, berarti data tidak digunakan
+    return false
+  } catch (error) {
+    console.error('Error checking if data is in use:', error)
+    return false // Jika terjadi error, anggap data tidak sedang digunakan
+  }
+}
 // Menentukan tanggal minimal untuk tanggal pulang
 const handleTglBerangkatChange = () => {
   if (dataSPPD.value.tglBerangkat) {

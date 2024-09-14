@@ -100,22 +100,7 @@ const isActive = (path) => {
               <span class="hide-menu">Surat Tugas</span>
             </router-link>
           </li>
-          <li class="sidebar-item">
-            <router-link to="/spm" :class="['sidebar-link', isActive('/spm') ? 'active' : '']">
-              <span>
-                <i class="ti ti-file-description"></i>
-              </span>
-              <span class="hide-menu">SPM</span>
-            </router-link>
-          </li>
-          <li class="sidebar-item">
-            <router-link to="/sp2d" class="sidebar-link" exact-active-class="active">
-              <span>
-                <i class="ti ti-file-description"></i>
-              </span>
-              <span class="hide-menu">SP2D</span>
-            </router-link>
-          </li>
+
           <li class="sidebar-item">
             <router-link :to="{ name: 'sppd' }" class="sidebar-link" exact-active-class="active">
               <span>
@@ -152,6 +137,23 @@ const isActive = (path) => {
                 </svg>
               </span>
               <span class="hide-menu">Delegasi Pegawai</span>
+            </router-link>
+          </li>
+
+          <li class="sidebar-item">
+            <router-link to="/spm" :class="['sidebar-link', isActive('/spm') ? 'active' : '']">
+              <span>
+                <i class="ti ti-file-description"></i>
+              </span>
+              <span class="hide-menu">SPM</span>
+            </router-link>
+          </li>
+          <li class="sidebar-item">
+            <router-link to="/sp2d" class="sidebar-link" exact-active-class="active">
+              <span>
+                <i class="ti ti-file-description"></i>
+              </span>
+              <span class="hide-menu">SP2D</span>
             </router-link>
           </li>
           <li class="nav-small-cap">

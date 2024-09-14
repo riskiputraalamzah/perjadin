@@ -204,7 +204,23 @@ export const useIDBStore = defineStore('idb', () => {
     return data ? data : false
   }
 
+  const getAllDataFromStore = async (storeName) => {
+    try {
+      if (!db.value) await initDB(dbName)
+      const tx = db.value.transaction(storeName, 'readonly')
+      const store = tx.objectStore(storeName)
+      const allData = await store.getAll()
+      await tx.done
+      return allData
+    } catch (error) {
+      console.error(`Error getting data from store ${storeName}:`, error)
+      return [] // Return an empty array if there is an error
+    }
+  }
+
   return {
+    getAllDataFromStore,
+    initDB,
     checkDB,
     storeToDB,
     fetchData,

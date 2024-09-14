@@ -3,7 +3,10 @@ import { ref, onMounted, computed, toRaw } from 'vue'
 import { useIDBStore } from '@/stores/IDB'
 import { Toast } from '@/components/ToastAlert'
 import { useRouter } from 'vue-router'
+import { useMainStore } from '@/stores/main'
+const mainStore = useMainStore()
 const idbStore = useIDBStore()
+
 const router = useRouter()
 
 const listSPM = ref([])
@@ -59,6 +62,7 @@ const handleForm = async () => {
   await idbStore.addItem('sp2d', data)
   isFormValid.value = false
   Toast.fire({ icon: 'success', title: 'Data Berhasil ditambahkan' })
+  mainStore.dataSP2D = null
   router.push('/sp2d')
 }
 </script>
@@ -74,7 +78,7 @@ const handleForm = async () => {
       </ol>
     </nav>
     <h1 class="text-dark fw-bold mb-4">Tambah Data SP2D</h1>
-    <div class="row">
+    <div class="row gy-3">
       <div class="col-md-6 col-lg-4">
         <div>
           <label for="noSP2D" class="form-label">No SP2D</label>
@@ -125,7 +129,7 @@ const handleForm = async () => {
       </div>
       <div class="col-md-6 col-lg-4">
         <div>
-          <label for="noSPM" class="form-label">Meta Anggaran</label>
+          <label for="noSPM" class="form-label">NO SPM</label>
           <select class="form-select" id="noSPM" v-model="form.spm">
             <option selected disabled>Pilih Salah Satu</option>
             <option

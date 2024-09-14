@@ -113,9 +113,17 @@ const handleDelete = async (id) => {
   // Jika pengguna mengonfirmasi
   if (result.isConfirmed) {
     try {
+      // Memeriksa apakah data sedang dipakai di object store lain
+      const isInUse = await checkIfDataInUse(id)
+      // return console.log({ isInUse })
+      if (isInUse?.status) {
+        // Jika data digunakan di object store lain, tampilkan notifikasi error
+        Swal.fire({ icon: 'error', title: `Data gagal dihapus`, text: isInUse.message })
+        return
+      }
+
       // Menghapus item dari IndexedDB
       const deleteItem = await idbStore.deleteItemById(objectStore, id)
-
       // Menampilkan notifikasi sukses
       if (deleteItem) {
         Toast.fire({ icon: 'success', title: `Data ${objectStore} berhasil dihapus` })
@@ -184,6 +192,38 @@ const formatDate = (dateString) => {
   const date = new Date(dateString)
 
   return date.toLocaleDateString('id-ID', options) // 'id-ID' untuk format Indonesia
+}
+
+// Fungsi untuk memeriksa apakah data digunakan di object store lain
+const checkIfDataInUse = async (id) => {
+  try {
+    const otherStores = ['delegasiPegawai', 'spm']
+
+    for (const store of otherStores) {
+      const data = await idbStore.fetchData(store) // Mendapatkan semua data dari object store
+
+      // Jika object store adalah 'delegasiPegawai'
+      if (store === 'delegasiPegawai') {
+        const isUsed = data.some((item) => item.noST.id === id)
+        if (isUsed)
+          return { status: true, message: 'Data sedang digunakan pada menu Delegasi Pegawai' } // Jika ditemukan, data sedang digunakan
+      }
+
+      // Jika object store adalah 'spm'
+      if (store === 'spm') {
+        const isUsed = data.some((item) =>
+          item.selectedST.some((selectedItemSt) => selectedItemSt.noST.id === id)
+        )
+        if (isUsed) return { status: true, message: 'Data sedang digunakan pada menu SPM' } // Jika ditemukan, data sedang digunakan
+      }
+    }
+
+    // Jika tidak ditemukan di object store lain, berarti data tidak digunakan
+    return false
+  } catch (error) {
+    console.error('Error checking if data is in use:', error)
+    return false // Jika terjadi error, anggap data tidak sedang digunakan
+  }
 }
 </script>
 
