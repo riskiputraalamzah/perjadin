@@ -1,0 +1,1 @@
+import{_ as t}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{o,c as r,a as s}from"./index-BdjIFSqz.js";const a={};function n(c,e){return o(),r("div",null,e[0]||(e[0]=[s("h1",{class:"text-dark fw-bold mb-4"},"Kwitansi",-1)]))}const l=t(a,[["render",n]]);export{l as default};

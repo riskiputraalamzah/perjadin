@@ -12,10 +12,7 @@ const isActive = (path) => {
       <div class="brand-logo d-flex align-items-center justify-content-between">
         <router-link class="text-nowrap logo-img d-flex mx-auto align-items-center" to="/">
           <!-- <img src="/assets/images/logo.png" width="80" alt="" /> -->
-          <div
-            class="h1 m-0"
-            style="font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif"
-          >
+          <div class="h1 m-0 font-neue">
             <span>PER - </span>
             <span class="text-primary">JADIN</span>
           </div></router-link

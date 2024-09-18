@@ -37,10 +37,7 @@ const togglePassword = ref(false)
   <div class="card-body">
     <router-link class="text-nowrap logo-img d-block text-center" to="/login">
       <!-- <img src="/assets/images/logo.png" width="80" alt="" /> -->
-      <div
-        class="display-4 m-0"
-        style="font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif"
-      >
+      <div class="display-4 m-0 font-neue">
         <span class="text-dark">PER - </span>
         <span class="text-primary">JADIN</span>
       </div></router-link
