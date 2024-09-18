@@ -1,9 +1,14 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, getCurrentInstance } from 'vue'
 import ModalItem from '@/components/ModalItem.vue'
 import { useIDBStore } from '@/stores/IDB'
 import Swal from 'sweetalert2'
 import { Toast } from '@/components/ToastAlert'
+
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
+import debounce from 'lodash/debounce'
+const { proxy } = getCurrentInstance()
 
 const idbStore = useIDBStore()
 
@@ -61,16 +66,38 @@ const modalProps = ref({
 const SPPDList = ref([])
 const loading = ref(true)
 
+const usedSPPDs = ref([]) // Untuk menyimpan ID yang sudah digunakan
+
 import { useMainStore } from '@/stores/main'
 const mainStore = useMainStore()
 const fetchAndCaching = async () => {
   SPPDList.value = await idbStore.fetchData(objectStore)
+  // Fetch delegasiPegawai data
+  const delegasiData = await idbStore.fetchData('delegasiPegawai')
+
+  // Simpan SPPD IDs yang terpakai di delegasiPegawai
+  usedSPPDs.value = SPPDList.value
+    .filter((sppd) =>
+      delegasiData.some((delegasi) =>
+        delegasi.relation?.some((relationItem) => relationItem.noSPPD?.id === sppd.id)
+      )
+    )
+    .map((sppd) => sppd.id)
+  mainStore.dataDelegasiPegawai = delegasiData
   mainStore.dataSPPD = SPPDList.value
 }
 onMounted(async () => {
   if (mainStore.dataSPPD) {
     loading.value = !loading.value
     SPPDList.value = mainStore.dataSPPD
+    usedSPPDs.value = SPPDList.value
+      .filter((sppd) =>
+        mainStore.dataDelegasiPegawai.some((delegasi) =>
+          delegasi.relation?.some((relationItem) => relationItem.noSPPD?.id === sppd.id)
+        )
+      )
+      .map((sppd) => sppd.id)
+    console.log(usedSPPDs.value)
     return
   }
   await fetchAndCaching()
@@ -250,6 +277,142 @@ const formatDate = (dateString) => {
 
 // const minDate = new Date().toISOString().split('T')[0]
 const minTglPulang = ref('')
+
+const isPrinting = ref(false)
+const angkaKeTeks = (angka) => {
+  if (angka === 0) return 'nol rupiah'
+
+  const satuan = [
+    '',
+    'satu',
+    'dua',
+    'tiga',
+    'empat',
+    'lima',
+    'enam',
+    'tujuh',
+    'delapan',
+    'sembilan'
+  ]
+  const belas = [
+    '',
+    'sebelas',
+    'dua belas',
+    'tiga belas',
+    'empat belas',
+    'lima belas',
+    'enam belas',
+    'tujuh belas',
+    'delapan belas',
+    'sembilan belas'
+  ]
+  const puluhan = [
+    '',
+    'sepuluh',
+    'dua puluh',
+    'tiga puluh',
+    'empat puluh',
+    'lima puluh',
+    'enam puluh',
+    'tujuh puluh',
+    'delapan puluh',
+    'sembilan puluh'
+  ]
+  const ribuan = ['', 'ribu', 'juta', 'miliar', 'triliun']
+
+  const terjemahkanRatusan = (num) => {
+    if (num < 10) return satuan[num]
+    if (num < 20) return belas[num - 10]
+    if (num < 100)
+      return puluhan[Math.floor(num / 10)] + (num % 10 !== 0 ? ' ' + satuan[num % 10] : '')
+    return (
+      satuan[Math.floor(num / 100)] +
+      ' ratus ' +
+      (num % 100 !== 0 ? terjemahkanRatusan(num % 100) : '')
+    )
+  }
+
+  const terjemahkan = (num) => {
+    if (num === 0) return ''
+    let hasil = ''
+    let ribuanIndex = 0
+    while (num > 0) {
+      let bagian = num % 1000
+      if (bagian !== 0) {
+        hasil = terjemahkanRatusan(bagian) + ' ' + ribuan[ribuanIndex] + (hasil ? ' ' + hasil : '')
+      }
+      num = Math.floor(num / 1000)
+      ribuanIndex++
+    }
+    return hasil.trim()
+  }
+
+  return terjemahkan(angka) + ' rupiah'
+}
+const handlePrint = async (row) => {
+  const rowDelegasi = getDelegasiSPPD(row.id)
+  // return console.log(rowDelegasi.relation.filter((s) => s.noSPPD.id === row.id)[0].totalSemuaDana)
+  const invoiceElement = document.getElementById('invoice')
+
+  // Update template dengan data row
+  document.getElementById('jumlahUang').innerText =
+    `${proxy.formatRupiah(rowDelegasi.relation.filter((s) => s.noSPPD.id === row.id)[0].totalSemuaDana)}`
+  document.getElementById('metaAnggaran').innerText = ''
+  document.getElementById('terbilang').innerText = angkaKeTeks(
+    rowDelegasi.relation.filter((s) => s.noSPPD.id === row.id)[0].totalSemuaDana
+  )
+  document.getElementById('deskripsiPembayaran').innerText = rowDelegasi.noST.uraian
+
+  // Tambahkan sedikit penundaan agar rendering elemen selesai
+  await new Promise((resolve) => setTimeout(resolve, 100)) // Tunggu 100ms
+
+  try {
+    // Ambil gambar dari elemen HTML dengan html2canvas
+    const canvas = await html2canvas(invoiceElement, { scale: 2, useCORS: true })
+
+    const imgData = canvas.toDataURL('image/png') // Konversi canvas ke format gambar
+    const pdf = new jsPDF('p', 'mm', 'a4') // Buat instance jsPDF untuk ukuran A4
+
+    // Tambahkan gambar ke PDF
+    const imgWidth = 210
+    const imgHeight = (canvas.height * imgWidth) / canvas.width
+    let position = 0
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+
+    // Preview di tab baru menggunakan blob URL
+    const blobUrl = pdf.output('bloburl')
+    window.open(blobUrl, '_blank')
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    alert('Gagal membuat PDF, coba lagi.')
+  } finally {
+    // Kembalikan elemen ke kondisi semula
+    // kuitansiTemplateElement.style.visibility = 'hidden'
+    // kuitansiTemplateElement.style.position = ''
+    // kuitansiTemplateElement.style.left = ''
+    isPrinting.value = false // Set isPrinting ke false setelah proses selesai
+  }
+}
+
+// Debounce fungsi handlePrint
+const debouncePrint = debounce((row) => {
+  isPrinting.value = true // Set isPrinting ke true saat proses dimulai
+  handlePrint(row)
+}, 1000) // Atur delay debounce sesuai kebutuhan
+
+const yearNow = () => new Date().getFullYear()
+
+// Mengecek apakah suatu ID digunakan di delegasi pegawai
+const showPrinting = (id) => {
+  return usedSPPDs.value.includes(id)
+}
+const getDelegasiSPPD = (id) => {
+  console.log({ id })
+  return mainStore.dataDelegasiPegawai.filter((delegasi) =>
+    delegasi.relation?.some((relationItem) => relationItem.noSPPD?.id === id)
+  )[0]
+}
 </script>
 
 <template>
@@ -297,6 +460,14 @@ const minTglPulang = ref('')
                 @click="openEditModal(st)"
               >
                 Edit
+              </button>
+              <button
+                class="btn btn-dark btn-sm"
+                @click="debouncePrint(st)"
+                :disabled="isPrinting"
+                v-show="showPrinting(st.id)"
+              >
+                {{ isPrinting ? 'Proses...' : 'Cetak' }}
               </button>
             </td>
           </tr>
@@ -369,11 +540,131 @@ const minTglPulang = ref('')
         </form>
       </template>
     </ModalItem>
+
+    <div class="table-responsive">
+      <div id="kuitansiTemplate" style="position: absolute; left: -9999px; top: -9999px">
+        <!-- <div id="kuitansiTemplate"> -->
+        <div id="invoice">
+          <div class="parent-content">
+            <div class="content">
+              <div class="row justify-content-between mb-4">
+                <div class="col-5">LEMBAR 1</div>
+                <div class="col-5">
+                  <table>
+                    <tbody>
+                      <tr>
+                        <td class="text-start">TA</td>
+                        <td class="px-2">:</td>
+                        <td class="text-start">{{ yearNow() }}</td>
+                      </tr>
+                      <tr>
+                        <td class="text-start">Nomor Bukti</td>
+                        <td class="px-2">:</td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td class="text-start">Meta Anggaran</td>
+                        <td class="px-2">:</td>
+                        <td class="text-start" id="metaAnggaran"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <h2
+                class="mb-3"
+                style="text-align: center; color: black; font-weight: bold; letter-spacing: 5px"
+              >
+                KUITANSI
+              </h2>
+              <table class="table-sm">
+                <tbody>
+                  <tr>
+                    <td class="text-start">Sudah diterima dari</td>
+                    <td class="px-2">:</td>
+                    <td class="text-start">Kuasa Pengguna Anggaran BPVP Sidoarjo</td>
+                  </tr>
+                  <tr>
+                    <td class="text-start">Jumlah Uang</td>
+                    <td class="px-2">:</td>
+                    <td class="text-start" id="jumlahUang"></td>
+                  </tr>
+                  <tr>
+                    <td class="text-start">Terbilang</td>
+                    <td class="px-2">:</td>
+                    <td class="text-start" id="terbilang"></td>
+                  </tr>
+                  <tr>
+                    <td class="align-top text-start">Untuk Pembayaran</td>
+                    <td class="align-top px-2">:</td>
+                    <td style="text-wrap: wrap; text-align: justify" id="deskripsiPembayaran"></td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="d-inline-block text-center float-end mt-5">
+                <div>Sidoarjo, <span style="margin-left: 150px">2024</span></div>
+
+                <div style="height: 80px"></div>
+                <div>Muhammad Aiza Akbar</div>
+                <div>NIP 3293289328</div>
+              </div>
+              <div style="clear: both"></div>
+            </div>
+
+            <div class="content">
+              <div class="row justify-content-between">
+                <div class="col-6 lh-md">
+                  <div>
+                    <strong> Setuju dibebankan pada mata anggaran berkenaan </strong>
+                  </div>
+                  <div>An. Kuasa Pengguna Anggaran</div>
+                  <div>Pejabat Pembuat Komitmen</div>
+                  <div>BPVP Sidoarjo</div>
+                  <div class="py-5"></div>
+                  <div>Ny. Nama Orang</div>
+                  <div>NIP nya</div>
+                </div>
+                <div class="col-4 lh-md">
+                  <div><strong>lunas dibayar tanggal</strong></div>
+                  <div>&nbsp;</div>
+                  <div>Bendahara Pengeluaran</div>
+                  <div>BPVP Sidoarjo</div>
+                  <div class="py-5"></div>
+                  <div>Ny. Nama Orang</div>
+                  <div>NIP nya</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <style scoped>
 textarea {
   overflow: hidden; /* Menghilangkan scrollbar */
   resize: none; /* Menonaktifkan resize manual */
+}
+#invoice {
+  /* padding: 20px 60px; */
+  background-color: #fff;
+  color: #000;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box;
+  padding: 20px;
+  width: 210mm;
+}
+
+#invoice .content {
+  padding: 20px;
+  border-bottom: 2px solid black;
+}
+.parent-content {
+  border: 2px solid black;
+  padding: 20px 0 0;
+  border-bottom: none;
 }
 </style>

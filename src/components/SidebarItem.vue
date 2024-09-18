@@ -10,9 +10,15 @@ const isActive = (path) => {
     <!-- Sidebar scroll-->
     <div>
       <div class="brand-logo d-flex align-items-center justify-content-between">
-        <router-link class="text-nowrap logo-img d-flex align-items-center g-3" to="/">
-          <img src="/assets/images/logo.png" width="80" alt="" />
-          <span class="h3 text-dark">Perjadin</span></router-link
+        <router-link class="text-nowrap logo-img d-flex mx-auto align-items-center" to="/">
+          <!-- <img src="/assets/images/logo.png" width="80" alt="" /> -->
+          <div
+            class="h1 m-0"
+            style="font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif"
+          >
+            <span>PER - </span>
+            <span class="text-primary">JADIN</span>
+          </div></router-link
         >
 
         <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
@@ -168,7 +174,7 @@ const isActive = (path) => {
               <span class="hide-menu">Laporan ST/SPPD</span>
             </router-link>
           </li>
-          <li class="sidebar-item">
+          <!-- <li class="sidebar-item">
             <router-link :to="{ name: 'cekSp' }" class="sidebar-link" exact-active-class="active">
               <span>
                 <i class="ti ti-file-dollar"></i>
@@ -191,7 +197,7 @@ const isActive = (path) => {
               </span>
               <span class="hide-menu">Rekap Data</span>
             </router-link>
-          </li>
+          </li> -->
         </ul>
       </nav>
       <!-- End Sidebar navigation -->

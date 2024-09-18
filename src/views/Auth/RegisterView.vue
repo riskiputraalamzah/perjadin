@@ -49,11 +49,18 @@ const toggleConfirmPassword = ref(false)
 
 <template>
   <div class="card-body">
-    <router-link class="text-nowrap logo-img text-center d-block py-3 w-100" to="/register"
-      ><img src="/assets/images/logo.png" width="100" alt=""
-    /></router-link>
+    <router-link class="text-nowrap logo-img d-block text-center" to="/login">
+      <!-- <img src="/assets/images/logo.png" width="80" alt="" /> -->
+      <div
+        class="display-4 m-0"
+        style="font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif"
+      >
+        <span class="text-dark">PER - </span>
+        <span class="text-primary">JADIN</span>
+      </div></router-link
+    >
 
-    <p class="text-center fw-bold text-dark display-6">Register</p>
+    <p class="text-center fw-bold h1 text-dark">Register</p>
     <form @submit.prevent="handleSubmit">
       <div class="mb-3">
         <label for="exampleInputtext1" class="form-label">Nama</label>

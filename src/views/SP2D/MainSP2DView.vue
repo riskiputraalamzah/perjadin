@@ -1,24 +1,28 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-
 import { useIDBStore } from '@/stores/IDB'
 import Swal from 'sweetalert2'
 import { Toast } from '@/components/ToastAlert'
+// import jsPDF from 'jspdf'
+// import html2canvas from 'html2canvas'
+// import debounce from 'lodash/debounce'
+
+// const { proxy } = getCurrentInstance()
 
 const idbStore = useIDBStore()
-
 const objectStore = 'sp2d'
-
 const listSP2D = ref([])
-
 const loading = ref(true)
+// const isPrinting = ref(false)
 
 import { useMainStore } from '@/stores/main'
 const mainStore = useMainStore()
+
 const fetchAndCaching = async () => {
   listSP2D.value = await idbStore.fetchData(objectStore)
   mainStore.dataSP2D = listSP2D.value
 }
+
 onMounted(async () => {
   if (mainStore.dataSP2D) {
     loading.value = !loading.value
@@ -30,7 +34,6 @@ onMounted(async () => {
 })
 
 const handleDelete = async (id) => {
-  // Konfirmasi dengan SweetAlert
   const result = await Swal.fire({
     title: `Hapus Data?`,
     icon: 'question',
@@ -40,16 +43,13 @@ const handleDelete = async (id) => {
     cancelButtonColor: 'red'
   })
 
-  // Jika pengguna mengonfirmasi
   if (result.isConfirmed) {
     try {
-      // Menghapus item dari IndexedDB
       const deleteItem = await idbStore.deleteItemById(objectStore, id)
 
-      // Menampilkan notifikasi sukses
       if (deleteItem) {
         Toast.fire({ icon: 'success', title: `Data berhasil dihapus` })
-        await fetchAndCaching(objectStore)
+        await fetchAndCaching()
       } else {
         Toast.fire({ icon: 'error', title: 'Gagal menghapus data' })
       }
@@ -65,10 +65,10 @@ const handleDelete = async (id) => {
   <div>
     <h1 class="text-dark fw-bold mb-4">List Surat Perintah Pencairan Dana</h1>
 
-    <!-- Tombol untuk membuka modal -->
     <router-link to="/sp2d/create" class="btn btn-primary mb-4" :disabled="loading">
       Tambah Data
     </router-link>
+
     <div class="table-responsive">
       <table class="table table-striped table-bordered">
         <thead>
@@ -80,6 +80,7 @@ const handleDelete = async (id) => {
             <th scope="col" class="text-center">Action</th>
           </tr>
         </thead>
+
         <tbody v-if="listSP2D.length > 0">
           <tr v-for="(row, key) in listSP2D" :key="key">
             <td v-text="row.noSP2D"></td>

@@ -11,7 +11,8 @@ const allData = ref({
   suratTugas: [],
   sppd: [],
   delegasiPegawai: [],
-  sp2d: []
+  sp2d: [],
+  spm: []
 })
 
 // Extract delegasiPegawaiData for use in the template
@@ -42,9 +43,11 @@ const chartOptions = ref({
     bar: {
       horizontal: false,
       columnWidth: '55%',
-      endingShape: 'rounded'
+      endingShape: 'rounded',
+      distributed: true // Membuat warna berbeda untuk setiap bar
     }
   },
+  colors: ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#A133FF', '#FF8C33', '#33FFE6'], // Warna berbeda untuk tiap kategori
   dataLabels: {
     enabled: false
   },
@@ -54,7 +57,7 @@ const chartOptions = ref({
     colors: ['transparent']
   },
   xaxis: {
-    categories: ['Users', 'Pegawai', 'Surat Tugas', 'SPPD', 'Delegasi Pegawai', 'SP2D']
+    categories: ['Users', 'Pegawai', 'Surat Tugas', 'SPPD', 'Delegasi Pegawai', 'SPM', 'SP2D']
   },
   yaxis: {
     title: {
@@ -77,7 +80,7 @@ const chartOptions = ref({
 const chartSeries = ref([
   {
     name: 'Data Count',
-    data: [0, 0, 0, 0, 0, 0] // Initial empty data
+    data: [0, 0, 0, 0, 0, 0, 0] // Initial empty data
   }
 ])
 
@@ -87,10 +90,12 @@ const piechartOptions = ref({
     type: 'pie'
   },
   title: {
-    text: 'Data Distribution by Object Store',
+    text: 'Data Distribution ',
     align: 'left'
   },
-  labels: ['Users', 'Pegawai', 'Surat Tugas', 'SPPD', 'Delegasi Pegawai', 'SP2D'],
+  labels: ['Users', 'Pegawai', 'Surat Tugas', 'SPPD', 'Delegasi Pegawai', 'SPM', 'SP2D'],
+  colors: ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#A133FF', '#FF8C33', '#33FFE6'], // Warna berbeda untuk tiap kategori
+
   responsive: [
     {
       breakpoint: 480,
@@ -104,11 +109,11 @@ const piechartOptions = ref({
 })
 
 // Pie chart series
-const series = ref([0, 0, 0, 0, 0, 0]) // Initial empty data
+const series = ref([0, 0, 0, 0, 0, 0, 0]) // Initial empty data
 
 // Function to export all data from IndexedDB and update `allData`
 const exportAllDataToJSON = async () => {
-  const stores = ['users', 'pegawai', 'suratTugas', 'sppd', 'delegasiPegawai', 'sp2d']
+  const stores = ['users', 'pegawai', 'suratTugas', 'sppd', 'delegasiPegawai', 'spm', 'sp2d']
   const data = {}
 
   for (const store of stores) {
@@ -128,6 +133,7 @@ const updateChartData = () => {
     allData.value['suratTugas'].length,
     allData.value['sppd'].length,
     allData.value['delegasiPegawai'].length,
+    allData.value['spm'].length,
     allData.value['sp2d'].length
   ]
 
@@ -137,6 +143,7 @@ const updateChartData = () => {
     allData.value['suratTugas'].length,
     allData.value['sppd'].length,
     allData.value['delegasiPegawai'].length,
+    allData.value['spm'].length,
     allData.value['sp2d'].length
   ]
 }

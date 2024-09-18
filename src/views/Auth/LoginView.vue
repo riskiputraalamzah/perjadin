@@ -35,10 +35,18 @@ const togglePassword = ref(false)
 </script>
 <template>
   <div class="card-body">
-    <router-link class="text-nowrap logo-img text-center d-block py-3 w-100" to="/login"
-      ><img src="/assets/images/logo.png" width="100" alt=""
-    /></router-link>
-    <p class="text-center fw-bold display-6 text-dark">Login</p>
+    <router-link class="text-nowrap logo-img d-block text-center" to="/login">
+      <!-- <img src="/assets/images/logo.png" width="80" alt="" /> -->
+      <div
+        class="display-4 m-0"
+        style="font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif"
+      >
+        <span class="text-dark">PER - </span>
+        <span class="text-primary">JADIN</span>
+      </div></router-link
+    >
+
+    <p class="text-center fw-bold h1 text-dark">Login</p>
     <form @submit.prevent="handleSubmit">
       <div class="mb-3">
         <label for="exampleInputEmail1" class="form-label">Username</label>

@@ -28,6 +28,17 @@ onMounted(async () => {
   listST.value = await idbStore.fetchData('delegasiPegawai')
 })
 
+const filteredListSt = computed(() => {
+  return listST.value.filter(
+    (list) =>
+      typeof list === 'object' &&
+      list !== null &&
+      'relation' in list &&
+      list.relation &&
+      list.relation.length > 0
+  )
+})
+
 const jumlahTotalSemuaDana = (st) => {
   return st.relation?.reduce((total, item) => {
     return total + item.totalSemuaDana
@@ -155,8 +166,8 @@ const handleForm = async () => {
                 </tr>
               </thead>
               <tbody>
-                <div class="text-center" v-if="listST.length < 0">Data Masih Kosong</div>
-                <tr v-for="(st, i) in listST" :key="i">
+                <div class="text-center" v-if="filteredListSt.length < 0">Data Masih Kosong</div>
+                <tr v-for="(st, i) in filteredListSt" :key="i">
                   <td>
                     <input
                       class="form-check-input"
